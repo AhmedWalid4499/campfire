@@ -1,0 +1,2699 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="midnight" data-font="literary">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campfire Write</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@0,700;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<style>
+/* ════════════════════════════════════
+   DESIGN TOKENS — Emil-grade easings
+   ════════════════════════════════════ */
+:root {
+  --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── CAMPFIRE (warm amber, default) ── */
+[data-theme="campfire"] {
+  --bg:       #1a1510;
+  --bg2:      #211c13;
+  --bg3:      #2a2418;
+  --bg4:      #32291d;
+  --border:   rgba(200,160,80,0.10);
+  --border2:  rgba(200,160,80,0.20);
+  --border3:  rgba(200,160,80,0.36);
+  --text:     #ede4cc;
+  --text2:    #a88b5a;
+  --text3:    #6a5535;
+  --accent:   #e8914a;
+  --accent2:  #c97a3a;
+  --acbg:     rgba(232,145,74,0.10);
+  --acglow:   rgba(232,145,74,0.06);
+  --amber:    #f0b030;
+  --teal:     #4ab8a0;
+  --coral:    #dc6858;
+  --mint:     #72b882;
+  --blue:     #5888c0;
+  --paper:    #1e1912;
+  --sb-bg:    #18140e;
+}
+/* ── MIDNIGHT (deep blue-black) ── */
+[data-theme="midnight"] {
+  --bg:       #060810;
+  --bg2:      #0a0e1c;
+  --bg3:      #101528;
+  --bg4:      #171e34;
+  --border:   rgba(80,120,220,0.10);
+  --border2:  rgba(80,120,220,0.20);
+  --border3:  rgba(80,120,220,0.36);
+  --text:     #ccd8f0;
+  --text2:    #5878b8;
+  --text3:    #303860;
+  --accent:   #5888e8;
+  --accent2:  #4070d0;
+  --acbg:     rgba(88,136,232,0.10);
+  --acglow:   rgba(88,136,232,0.06);
+  --amber:    #d8a840;
+  --teal:     #38b8c0;
+  --coral:    #d07080;
+  --mint:     #58c080;
+  --blue:     #7090d8;
+  --paper:    #080a16;
+  --sb-bg:    #040608;
+}
+/* ── SAKURA (soft pink, light) ── */
+[data-theme="sakura"] {
+  --bg:       #fdf5f7;
+  --bg2:      #f8ecf0;
+  --bg3:      #f0e0e8;
+  --bg4:      #e8d0da;
+  --border:   rgba(180,80,120,0.08);
+  --border2:  rgba(180,80,120,0.16);
+  --border3:  rgba(180,80,120,0.30);
+  --text:     #281018;
+  --text2:    #804860;
+  --text3:    #c090a8;
+  --accent:   #c04878;
+  --accent2:  #a83060;
+  --acbg:     rgba(192,72,120,0.08);
+  --acglow:   rgba(192,72,120,0.04);
+  --amber:    #c07020;
+  --teal:     #288090;
+  --coral:    #c03828;
+  --mint:     #408058;
+  --blue:     #484898;
+  --paper:    #fffbfc;
+  --sb-bg:    #f5eaf0;
+}
+/* ── PARCHMENT (warm ivory, light) ── */
+[data-theme="parchment"] {
+  --bg:       #f7f1e3;
+  --bg2:      #f0e8d0;
+  --bg3:      #e8dcc0;
+  --bg4:      #ddd0ac;
+  --border:   rgba(100,60,20,0.09);
+  --border2:  rgba(100,60,20,0.17);
+  --border3:  rgba(100,60,20,0.28);
+  --text:     #281808;
+  --text2:    #785030;
+  --text3:    #b09060;
+  --accent:   #8a3e14;
+  --accent2:  #6e2e08;
+  --acbg:     rgba(138,62,20,0.09);
+  --acglow:   rgba(138,62,20,0.05);
+  --amber:    #b06010;
+  --teal:     #286858;
+  --coral:    #b03020;
+  --mint:     #406828;
+  --blue:     #384878;
+  --paper:    #faf5e8;
+  --sb-bg:    #ede4cc;
+}
+
+/* ─────────────── FONT SYSTEM ─────────────── */
+[data-font="literary"] { --ui: 'DM Sans', system-ui, sans-serif; --write: 'Lora', Georgia, serif; }
+[data-font="serif"]    { --ui: 'Lora', Georgia, serif;           --write: 'Lora', Georgia, serif; }
+[data-font="display"]  { --ui: 'DM Sans', system-ui, sans-serif; --write: 'Playfair Display', Georgia, serif; }
+[data-font="sans"]     { --ui: 'DM Sans', system-ui, sans-serif; --write: 'DM Sans', system-ui, sans-serif; }
+[data-font="mono"]     { --ui: 'JetBrains Mono', monospace;      --write: 'JetBrains Mono', monospace; }
+
+/* ─────────────── RESET ─────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: var(--ui, 'DM Sans', sans-serif);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border3); }
+
+/* ─────────────── APP SHELL ─────────────── */
+#app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ─────────────── SIDEBAR ─────────────── */
+#sidebar {
+  width: 56px;
+  min-width: 56px;
+  background: var(--sb-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  overflow: hidden;
+  transition: width 240ms var(--ease-drawer), min-width 240ms var(--ease-drawer);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+#sidebar.open {
+  width: 216px;
+  min-width: 216px;
+}
+
+.sb-brand {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+  transition: transform 150ms var(--ease-out), box-shadow 150ms;
+  box-shadow: 0 2px 12px var(--acbg);
+}
+.sb-brand:hover { transform: scale(1.08); }
+.sb-brand:active { transform: scale(0.95); }
+
+.sb-nav { flex: 1; width: 100%; padding: 0 8px; display: flex; flex-direction: column; gap: 2px; }
+.sb-foot { width: 100%; padding: 0 8px 8px; display: flex; flex-direction: column; gap: 2px; }
+
+.sb-sep { width: 36px; height: 1px; background: var(--border); margin: 8px auto; transition: width 240ms var(--ease-drawer); flex-shrink: 0; }
+#sidebar.open .sb-sep { width: calc(100% - 16px); }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  border-radius: 8px;
+  padding: 0 9px;
+  cursor: pointer;
+  color: var(--text3);
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition:
+    background 130ms ease,
+    color 130ms ease,
+    transform 110ms var(--ease-out);
+  white-space: nowrap;
+  user-select: none;
+}
+.nav-item:hover { background: var(--bg3); color: var(--text2); }
+.nav-item:active { transform: scale(0.97); }
+.nav-item.active {
+  background: var(--acbg);
+  color: var(--accent);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; height: 60%; width: 2.5px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+.nav-icon { font-size: 16px; flex-shrink: 0; width: 20px; text-align: center; }
+.nav-label {
+  font-size: 12px; font-weight: 500;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  pointer-events: none;
+}
+#sidebar.open .nav-label { opacity: 1; }
+
+/* ─────────────── MAIN ─────────────── */
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ─────────────── TOPBAR ─────────────── */
+#topbar {
+  height: 48px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+  flex-shrink: 0;
+}
+#proj-title {
+  font-size: 13px; font-weight: 500;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 8px;
+  outline: none;
+  font-family: var(--ui);
+  cursor: text;
+  transition: border-color 130ms, background 130ms;
+  min-width: 100px;
+}
+#proj-title:hover { border-color: var(--border2); }
+#proj-title:focus { border-color: var(--accent); background: var(--bg3); }
+
+.tb-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+.tb-gap { flex: 1; }
+
+.search-box {
+  position: relative;
+  flex: 1;
+  max-width: 240px;
+}
+.search-box input {
+  width: 100%; height: 28px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 10px 0 28px;
+  font-size: 12px; color: var(--text);
+  outline: none; font-family: var(--ui);
+  transition: border-color 130ms, box-shadow 130ms;
+}
+.search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--acbg); }
+.search-box::before {
+  content: '⌕';
+  position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+  color: var(--text3); font-size: 14px; pointer-events: none;
+}
+
+/* Theme / Font dropdowns */
+.tb-select {
+  height: 28px; padding: 0 8px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text2);
+  font-size: 11px; font-family: var(--ui);
+  outline: none; cursor: pointer;
+  transition: border-color 130ms;
+}
+.tb-select:hover { border-color: var(--border2); }
+.tb-select:focus { border-color: var(--accent); }
+.tb-select option { background: var(--bg3); }
+
+/* Topbar buttons */
+.tbtn {
+  height: 28px; padding: 0 11px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  font-size: 11px; font-weight: 500;
+  cursor: pointer; font-family: var(--ui);
+  display: flex; align-items: center; gap: 5px;
+  transition: background 130ms, color 130ms, border-color 130ms, transform 110ms var(--ease-out);
+  flex-shrink: 0;
+}
+.tbtn:hover { background: var(--bg3); color: var(--text); border-color: var(--border3); }
+.tbtn:active { transform: scale(0.97); }
+.tbtn.primary {
+  background: var(--accent); color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px var(--acbg);
+}
+.tbtn.primary:hover { background: var(--accent2); border-color: var(--accent2); }
+
+/* ─────────────── WORKSPACE ─────────────── */
+#workspace {
+  flex: 1; overflow: hidden;
+  display: flex;
+  min-height: 0;
+}
+#content {
+  flex: 1; overflow-y: auto;
+  padding: 28px 32px;
+  min-height: 0;
+}
+
+/* ─────────────── VIEW ENTRY ─────────────── */
+.view-root {
+  animation: viewIn 220ms var(--ease-out) both;
+}
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.stagger-1 { animation-delay: 30ms; }
+.stagger-2 { animation-delay: 60ms; }
+.stagger-3 { animation-delay: 90ms; }
+.stagger-4 { animation-delay: 120ms; }
+
+/* ─────────────── COMMON UI ─────────────── */
+.page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+}
+.page-title {
+  font-family: var(--write);
+  font-size: 22px; font-weight: 500;
+  color: var(--text);
+}
+.sec-label {
+  font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.11em;
+  color: var(--text3);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 7px 14px; border-radius: 8px;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer; font-family: var(--ui);
+  border: 1px solid transparent;
+  transition: background 130ms, color 130ms, border-color 130ms, transform 110ms var(--ease-out), box-shadow 130ms;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px var(--acbg); }
+.btn-primary:hover { background: var(--accent2); }
+.btn-ghost { background: transparent; color: var(--text2); border-color: var(--border2); }
+.btn-ghost:hover { background: var(--bg3); color: var(--text); border-color: var(--border3); }
+.btn-danger { background: var(--coral); color: #fff; border-color: var(--coral); }
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+.btn-icon { padding: 6px; border-radius: 7px; }
+.btn-icon:hover { background: var(--bg3); }
+
+/* Cards */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: border-color 160ms ease, transform 150ms var(--ease-out), box-shadow 150ms ease;
+}
+.card-hover:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+  cursor: pointer;
+}
+.card-hover:active { transform: translateY(0) scale(0.99); box-shadow: none; }
+
+/* Inputs */
+input, textarea, select {
+  font-family: var(--ui);
+  color: var(--text);
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 130ms, box-shadow 130ms;
+}
+input, select { height: 34px; padding: 0 11px; }
+textarea { padding: 9px 11px; resize: vertical; }
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--acbg);
+}
+label { font-size: 11px; color: var(--text2); display: block; margin-bottom: 4px; }
+.form-group { display: flex; flex-direction: column; gap: 3px; margin-bottom: 12px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+
+/* Grid helpers */
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+/* Stat */
+.stat-card { padding: 18px 20px; border-radius: 14px; background: var(--bg2); border: 1px solid var(--border); }
+.stat-value { font-size: 28px; font-weight: 600; font-family: 'JetBrains Mono', monospace; margin: 6px 0 3px; }
+.stat-desc { font-size: 11px; color: var(--text3); }
+
+/* Tags */
+.tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+.tag-accent { background: var(--acbg); color: var(--accent); border-color: var(--border2); }
+
+/* Progress bar */
+.prog-wrap { height: 5px; background: var(--bg4); border-radius: 3px; overflow: hidden; }
+.prog-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--amber)); transition: width 800ms var(--ease-out); }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 60px 24px; color: var(--text3); }
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state h3 { font-size: 15px; color: var(--text2); font-weight: 500; margin-bottom: 6px; }
+.empty-state p { font-size: 12px; line-height: 1.6; max-width: 260px; margin: 0 auto; }
+
+/* ─────────────── MODALS ─────────────── */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.58); backdrop-filter: blur(8px) saturate(0.8);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: backdropIn 180ms var(--ease-out);
+}
+.modal-backdrop .modal,
+.modal-backdrop .modal-lg {
+  box-shadow: 0 24px 80px rgba(0,0,0,0.4), 0 0 0 1px var(--border2);
+}
+@keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 18px;
+  padding: 26px;
+  width: 100%; max-width: 520px;
+  max-height: 90vh; overflow-y: auto;
+  animation: modalIn 200ms var(--ease-out);
+}
+.modal-lg { max-width: 680px; }
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* Image upload drop zone */
+.img-drop {
+  border: 2px dashed var(--border2); border-radius: 10px;
+  padding: 22px; text-align: center; cursor: pointer;
+  color: var(--text3); font-size: 12px;
+  transition: border-color 150ms, background 150ms, transform 140ms var(--ease-out);
+}
+.img-drop:hover { border-color: var(--accent); color: var(--accent); background: var(--acglow); transform: scale(1.01); }
+
+/* ─────────────── TOAST ─────────────── */
+#toasts {
+  position: fixed; bottom: 18px; right: 18px;
+  z-index: 999; display: flex; flex-direction: column; gap: 7px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--bg2);
+  border: 1px solid var(--border3);
+  padding: 11px 16px; border-radius: 12px; font-size: 12px;
+  color: var(--text); pointer-events: all;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.04);
+  display: flex; align-items: center; gap: 9px; max-width: 300px;
+  font-family: var(--ui, 'DM Sans', sans-serif);
+  animation: toastIn 200ms var(--ease-out);
+}
+.toast.removing { animation: toastOut 190ms var(--ease-out) forwards; }
+@keyframes toastIn  { from { opacity:0; transform:translateY(6px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes toastOut { to   { opacity:0; transform:translateX(6px); } }
+.toast-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* ─────────────── SAVE INDICATOR ─────────────── */
+#save-badge {
+  position: fixed; top: 56px; right: 16px;
+  font-size: 11px; color: var(--text3); z-index: 50;
+  opacity: 0; pointer-events: none;
+  transition: opacity 250ms;
+}
+#save-badge.visible { opacity: 1; }
+
+/* ══════════════════════════════════════
+   ── DASHBOARD
+   ══════════════════════════════════════ */
+#view-dashboard {}
+
+/* ══════════════════════════════════════
+   ── CHARACTERS  (split-panel layout)
+   ══════════════════════════════════════ */
+.split-layout {
+  display: flex; gap: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+.split-list {
+  width: 280px; min-width: 280px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.split-list-header {
+  padding: 20px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.split-list-body { flex: 1; overflow-y: auto; padding: 8px; }
+.split-detail { flex: 1; overflow-y: auto; padding: 32px; }
+
+.list-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 10px; border-radius: 9px; cursor: pointer;
+  transition: background 130ms ease, color 130ms ease, transform 110ms var(--ease-out);
+  color: var(--text2);
+}
+.list-item:hover { background: var(--bg3); color: var(--text); }
+.list-item:active { transform: scale(0.98); }
+.list-item.active { background: var(--acbg); color: var(--accent); }
+
+/* Character avatar */
+.char-av {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0; overflow: hidden;
+}
+.char-av img { width: 100%; height: 100%; object-fit: cover; }
+
+.char-av-lg {
+  width: 90px; height: 90px; border-radius: 16px;
+  background: var(--bg3); border: 2px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; flex-shrink: 0; overflow: hidden;
+  transition: border-color 160ms;
+}
+.char-av-lg img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Profile tabs */
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.tab-btn {
+  padding: 8px 14px; font-size: 12px; font-weight: 500;
+  color: var(--text3); border-bottom: 2px solid transparent;
+  cursor: pointer; transition: color 130ms, border-color 130ms;
+}
+.tab-btn:hover { color: var(--text2); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: viewIn 180ms var(--ease-out); }
+
+/* ══════════════════════════════════════
+   ── MANUSCRIPT EDITOR
+   ══════════════════════════════════════ */
+.ms-shell {
+  display: flex; height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+.ms-chapters {
+  width: 220px; min-width: 220px;
+  background: var(--bg2); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.ms-ch-head {
+  padding: 16px 12px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.ms-ch-body { flex: 1; overflow-y: auto; padding: 6px 6px; }
+.ch-item {
+  padding: 8px 10px; border-radius: 7px; cursor: pointer;
+  font-size: 12px; color: var(--text2);
+  transition: background 130ms, color 130ms;
+}
+.ch-item:hover { background: var(--bg3); color: var(--text); }
+.ch-item.active { background: var(--acbg); color: var(--accent); }
+
+.ms-center { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--paper); }
+.ms-topbar {
+  height: 44px; background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 16px; gap: 10px;
+  flex-shrink: 0;
+}
+.ms-editor-wrap { flex: 1; overflow-y: auto; }
+
+/* Quill overrides for calm writing */
+.ql-toolbar.ql-snow {
+  background: var(--bg2) !important;
+  border: none !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 7px 14px !important;
+}
+.ql-container.ql-snow { border: none !important; background: transparent !important; }
+.ql-editor {
+  font-family: var(--write) !important;
+  font-size: 17px !important;
+  line-height: 1.9 !important;
+  color: var(--text) !important;
+  padding: 48px 52px !important;
+  max-width: 700px !important;
+  margin: 0 auto !important;
+  caret-color: var(--accent) !important;
+}
+.ql-editor::before { color: var(--text3) !important; font-style: italic !important; }
+.ql-editor h1 { font-family: var(--write) !important; font-size: 28px !important; font-weight: 600 !important; }
+.ql-editor h2 { font-family: var(--write) !important; font-size: 22px !important; font-weight: 500 !important; }
+.ql-editor h3 { font-family: var(--write) !important; font-size: 18px !important; font-weight: 600 !important; }
+.ql-editor blockquote { border-left: 3px solid var(--accent) !important; padding-left: 16px !important; color: var(--text2) !important; font-style: italic !important; margin: 1em 0 !important; }
+.ql-snow .ql-stroke { stroke: var(--text2) !important; }
+.ql-snow .ql-fill { fill: var(--text2) !important; }
+.ql-snow .ql-picker { color: var(--text2) !important; }
+.ql-snow .ql-picker-options { background: var(--bg3) !important; border-color: var(--border2) !important; }
+.ql-snow .ql-toolbar button:hover .ql-stroke,
+.ql-snow .ql-toolbar button.ql-active .ql-stroke { stroke: var(--accent) !important; }
+.ql-snow .ql-toolbar button:hover .ql-fill,
+.ql-snow .ql-toolbar button.ql-active .ql-fill  { fill: var(--accent) !important; }
+
+/* ══════════════════════════════════════
+   ── TIMELINE
+   ══════════════════════════════════════ */
+.tl-track { position: relative; padding-left: 36px; }
+.tl-track::before {
+  content: ''; position: absolute;
+  left: 12px; top: 0; bottom: 0; width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--border2) 8%, var(--border2) 92%, transparent);
+}
+.tl-item { position: relative; margin-bottom: 20px; }
+.tl-dot {
+  position: absolute; left: -28px; top: 10px;
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid var(--bg2);
+  box-shadow: 0 0 0 3px var(--acbg);
+}
+
+/* ══════════════════════════════════════
+   ── KANBAN
+   ══════════════════════════════════════ */
+.kanban-board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; height: 100%; align-items: flex-start; }
+.kanban-col { min-width: 240px; max-width: 240px; display: flex; flex-direction: column; }
+.kanban-col-head { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 10px; padding: 0 4px; }
+.kanban-cards {
+  min-height: 200px; flex: 1;
+  background: var(--bg3); border-radius: 10px; padding: 10px;
+  display: flex; flex-direction: column; gap: 8px;
+  border: 2px dashed transparent;
+  transition: border-color 150ms, background 150ms;
+}
+.kanban-cards.drag-over { border-color: var(--accent); background: var(--acglow); }
+.scene-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px; cursor: grab;
+  font-size: 12px;
+  transition: transform 140ms var(--ease-out), box-shadow 130ms, border-color 130ms;
+}
+.scene-card:hover { border-color: var(--border2); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+.scene-card:active { cursor: grabbing; transform: scale(0.98); }
+
+/* ══════════════════════════════════════
+   ── RELATIONSHIP GRAPH
+   ══════════════════════════════════════ */
+#rel-canvas-wrap {
+  position: relative; border-radius: 14px;
+  border: 1px solid var(--border); overflow: hidden;
+  background: var(--paper);
+}
+#rel-canvas { width: 100%; display: block; cursor: grab; }
+#rel-canvas:active { cursor: grabbing; }
+
+/* ══════════════════════════════════════
+   ── POMODORO WIDGET
+   ══════════════════════════════════════ */
+#pom-widget {
+  position: fixed; bottom: 18px; left: 72px;
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 14px; padding: 12px 16px;
+  display: flex; align-items: center; gap: 12px;
+  z-index: 40; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  animation: viewIn 200ms var(--ease-out);
+}
+
+/* ══════════════════════════════════════
+   ── SETTINGS
+   ══════════════════════════════════════ */
+.theme-swatch {
+  border: 2px solid var(--border);
+  border-radius: 10px; padding: 13px;
+  cursor: pointer; text-align: center;
+  transition: border-color 140ms, transform 110ms var(--ease-out);
+}
+.theme-swatch:hover { border-color: var(--border3); transform: translateY(-1px); }
+.theme-swatch:active { transform: scale(0.97); }
+.theme-swatch.selected { border-color: var(--accent); }
+.font-opt {
+  padding: 11px 14px; border-radius: 9px;
+  border: 2px solid var(--border); cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: border-color 140ms, transform 110ms var(--ease-out);
+}
+.font-opt:hover { border-color: var(--border3); }
+.font-opt:active { transform: scale(0.98); }
+.font-opt.selected { border-color: var(--accent); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── BENTO CELLS ── */
+.bento-cell {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 14px 16px;
+  transition: border-color 150ms;
+}
+.bento-cell:focus-within {
+  border-color: var(--border2);
+}
+.bento-cell textarea, .bento-cell input[type="text"] {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  resize: none;
+}
+
+/* ── Theme-specific input/select improvements ── */
+[data-theme="sakura"] input::placeholder,
+[data-theme="sakura"] textarea::placeholder { color: var(--text3); }
+[data-theme="parchment"] input::placeholder,
+[data-theme="parchment"] textarea::placeholder { color: var(--text3); }
+[data-theme="sakura"] select option,
+[data-theme="parchment"] select option { background: var(--bg3); color: var(--text); }
+[data-theme="campfire"] select option,
+[data-theme="midnight"] select option { background: var(--bg3); color: var(--text); }
+
+/* ── Confirm dialog theming (native dialogs can't be fully themed, but we override) ── */
+/* ── Better card contrast ── */
+[data-theme="sakura"] .card { box-shadow: 0 1px 4px rgba(180,80,120,0.06); }
+[data-theme="parchment"] .card { box-shadow: 0 1px 4px rgba(100,60,20,0.06); }
+
+/* ── Proj title input ── */
+#proj-title { max-width: 200px; }
+
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="sb-brand" id="sb-toggle" title="Toggle sidebar">🔥</div>
+    <div class="sb-nav" id="sb-nav">
+      <!-- injected by JS -->
+    </div>
+    <div class="sb-sep"></div>
+    <div class="sb-foot" id="sb-foot">
+      <!-- injected by JS -->
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div id="main">
+    <!-- TOPBAR -->
+    <header id="topbar">
+      <input id="proj-title" value="Campfire Write" placeholder="Project name" title="Click to rename project" readonly>
+      <div class="tb-sep"></div>
+      <div class="search-box">
+        <input id="search-input" placeholder="Search everything…" autocomplete="off">
+      </div>
+      <div class="tb-gap"></div>
+      <!-- Theme selector -->
+      <select class="tb-select" id="theme-select" title="Switch theme">
+        <option value="campfire">🔥 Campfire</option>
+        <option value="midnight">🌙 Midnight</option>
+        <option value="sakura">🌸 Sakura</option>
+        <option value="parchment">📜 Parchment</option>
+      </select>
+      <!-- Font selector -->
+      <select class="tb-select" id="font-select" title="Switch font">
+        <option value="literary">Aa Literary</option>
+        <option value="serif">Aa Serif</option>
+        <option value="display">Aa Display</option>
+        <option value="sans">Aa Sans</option>
+        <option value="mono">Aa Mono</option>
+      </select>
+      <button class="tbtn" id="proj-btn">⊞ Projects</button>
+      <button class="tbtn primary" id="quick-add-btn">＋ Add</button>
+    </header>
+
+    <!-- WORKSPACE -->
+    <div id="workspace">
+      <div id="content">
+        <!-- views rendered here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div id="toasts"></div>
+<!-- SAVE INDICATOR -->
+<div id="save-badge">✓ Saved</div>
+
+<!-- ─── FIREBASE ─── -->
+<script type="module">
+import { initializeApp }            from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, doc, addDoc, getDoc, getDocs,
+         updateDoc, deleteDoc, onSnapshot, query, where,
+         serverTimestamp, setDoc }  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL }
+                                    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+const FB = initializeApp({
+  apiKey:            "AIzaSyDgxRq4fh9PX5FvkGDzB8N_1mHxf2GwWAo",
+  authDomain:        "campfire-replical.firebaseapp.com",
+  projectId:         "campfire-replical",
+  storageBucket:     "campfire-replical.firebasestorage.app",
+  messagingSenderId: "166297124746",
+  appId:             "1:166297124746:web:5420bec6bb61d1695e9273"
+});
+const DB  = getFirestore(FB);
+const STG = getStorage(FB);
+
+/* ════════════════════════════════════
+   UTILITIES
+   ════════════════════════════════════ */
+const uid   = () => Math.random().toString(36).slice(2, 9);
+const debounce = (fn, ms=800) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const esc   = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const wc    = html => { const d = document.createElement('div'); d.innerHTML = html||''; return (d.textContent.trim().match(/\S+/g)||[]).length; };
+const fmtDate = ts => { if (!ts) return '—'; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+const fmtTime = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+
+let _saveTmo;
+function showSaved() {
+  const el = document.getElementById('save-badge');
+  if (!el) return;
+  el.classList.add('visible');
+  clearTimeout(_saveTmo);
+  _saveTmo = setTimeout(() => el.classList.remove('visible'), 2200);
+}
+
+function toast(msg, type = 'info', dur = 3200) {
+  const wrap = document.getElementById('toasts'); if (!wrap) return;
+  const colors = { success:'var(--mint)', error:'var(--coral)', info:'var(--accent)', warn:'var(--amber)' };
+  const el = document.createElement('div'); el.className = 'toast';
+  el.innerHTML = `<span class="toast-dot" style="background:${colors[type]||colors.info}"></span><span>${esc(msg)}</span>`;
+  wrap.appendChild(el);
+  setTimeout(() => { el.classList.add('removing'); setTimeout(() => el.remove(), 200); }, dur);
+}
+
+async function uploadImg(file, path) {
+  const r = ref(STG, path); await uploadBytes(r, file); return getDownloadURL(r);
+}
+
+/* ════════════════════════════════════
+   APPLICATION STATE
+   ════════════════════════════════════ */
+const APP = {
+  view:       'dashboard',
+  project:    null,
+  projects:   [],
+  chars:      [], lore: [], events: [], rels: [], manuscripts: [], notes: [],
+  cfg:        { theme:'midnight', font:'literary', dailyGoal:500, pomMins:25 },
+  msId:       null,
+  msChapter:  null,
+  charId:     null,    // selected character in split view
+  loreId:     null,    // selected lore entry
+  charTab:    'overview',
+  search:     '',
+  pomOn:      false, pomTime: 1500, pomTotal: 1500,
+  _unsubs:    [], _pomInterval: null, _quill: null,
+};
+
+function nav(view) {
+  APP.view = view;
+  APP.search = '';
+  if (view !== 'manuscript') { APP.msId = null; APP.msChapter = null; }
+  renderAll();
+}
+window.nav = nav;
+
+/* ════════════════════════════════════
+   FIREBASE HELPERS
+   ════════════════════════════════════ */
+function subCollection(col, pid, setter) {
+  const q = pid ? query(collection(DB, col), where('projectId','==', pid)) : collection(DB, col);
+  const unsub = onSnapshot(q,
+    snap => { setter(snap.docs.map(d => ({id: d.id, ...d.data()}))); renderContent(); },
+    err  => console.warn(col, err)
+  );
+  APP._unsubs.push(unsub);
+}
+
+function loadProject(pid) {
+  APP._unsubs.forEach(u => u());
+  APP._unsubs = [];
+  if (!pid) return;
+  subCollection('characters',   pid, d => APP.chars       = d);
+  subCollection('lore',         pid, d => APP.lore        = d);
+  subCollection('events',       pid, d => APP.events      = d.sort((a,b)=>(a.date||'').localeCompare(b.date||'')));
+  subCollection('relationships',pid, d => APP.rels        = d);
+  subCollection('manuscripts',  pid, d => APP.manuscripts = d);
+  subCollection('notes',        pid, d => APP.notes       = d);
+}
+
+async function dbSave(col, data) {
+  if (!APP.project) { toast('Select a project first', 'error'); return null; }
+  const ref = await addDoc(collection(DB, col), { ...data, projectId: APP.project.id, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+  showSaved(); return ref.id;
+}
+async function dbUpdate(col, id, data) {
+  await updateDoc(doc(DB, col, id), { ...data, updatedAt: serverTimestamp() }); showSaved();
+}
+async function dbDelete(col, id) { await deleteDoc(doc(DB, col, id)); showSaved(); }
+window.dbDelete = dbDelete;
+
+/* ════════════════════════════════════
+   QUILL EDITOR
+   ════════════════════════════════════ */
+function initQuill(containerId, content, onSave) {
+  if (!window.Quill) return null;
+  const el = document.getElementById(containerId); if (!el) return null;
+  const q = new Quill(el, {
+    theme: 'snow',
+    modules: {
+      toolbar: { container: [
+        [{ header: [1,2,3,false] }],
+        ['bold','italic','underline','strike'],
+        [{ align: [] }, { align: 'center' }, { align: 'right' }, { align: 'justify' }],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['blockquote','code-block'],
+        [{ indent: '-1' }, { indent: '+1' }],
+        ['link','clean']
+      ]}
+    },
+    placeholder: 'Your story begins here…'
+  });
+  if (content) q.root.innerHTML = content;
+  const sv = debounce(async () => { if (onSave) await onSave(q.root.innerHTML); }, 900);
+  q.on('text-change', (_, __, src) => {
+    if (src !== 'user') return;
+    sv();
+    const wcEl = document.getElementById('ms-wc');
+    if (wcEl) wcEl.textContent = wc(q.root.innerHTML).toLocaleString() + ' words';
+  });
+  APP._quill = q;
+  return q;
+}
+
+/* ════════════════════════════════════
+   MODAL SYSTEM
+   ════════════════════════════════════ */
+function openModal(html) {
+  closeModal();
+  const el = document.createElement('div');
+  el.className = 'modal-backdrop'; el.id = 'active-modal';
+  el.innerHTML = html;
+  el.addEventListener('click', e => { if (e.target === el) closeModal(); });
+  document.body.appendChild(el);
+}
+function closeModal() {
+  const m = document.getElementById('active-modal'); if (m) m.remove();
+}
+window.closeModal = closeModal;
+
+/* ════════════════════════════════════
+   RENDER ENGINE
+   ════════════════════════════════════ */
+const VIEWS = {
+  dashboard:     renderDashboard,
+  characters:    renderCharacters,
+  lore:          renderLore,
+  relationships: renderRelationships,
+  timeline:      renderTimeline,
+  plot:          renderPlot,
+  manuscript:    renderManuscript,
+  notes:         renderNotes,
+  settings:      renderSettings,
+};
+
+const NAV_ITEMS = [
+  { id: 'dashboard',     icon: '⌂',  label: 'Dashboard'     },
+  { id: 'characters',    icon: '👥', label: 'Characters'    },
+  { id: 'lore',          icon: '🌍', label: 'World & Lore'  },
+  { id: 'relationships', icon: '🕸',  label: 'Relationships' },
+  { id: 'timeline',      icon: '📅', label: 'Timeline'      },
+  { id: 'plot',          icon: '🎬', label: 'Plot & Arcs'   },
+  { id: 'manuscript',    icon: '✍',  label: 'Manuscript'    },
+  { id: 'notes',         icon: '📝', label: 'Notes'         },
+];
+const FOOT_ITEMS = [
+  { id: 'settings', icon: '⚙', label: 'Settings' },
+  { id: '_pom',     icon: '🍅', label: 'Pomodoro' },
+];
+
+function buildSidebar() {
+  const nav  = document.getElementById('sb-nav');
+  const foot = document.getElementById('sb-foot');
+  if (!nav || !foot) return;
+
+  nav.innerHTML = NAV_ITEMS.map(n => `
+    <div class="nav-item${APP.view === n.id ? ' active' : ''}" data-view="${n.id}" role="button" tabindex="0" title="${n.label}">
+      <span class="nav-icon">${n.icon}</span>
+      <span class="nav-label">${n.label}</span>
+    </div>
+  `).join('');
+
+  foot.innerHTML = FOOT_ITEMS.map(n => `
+    <div class="nav-item${APP.view === n.id ? ' active' : ''} ${n.id === '_pom' && APP.pomOn ? 'active' : ''}" data-view="${n.id}" role="button" tabindex="0" title="${n.label}">
+      <span class="nav-icon">${n.icon}</span>
+      <span class="nav-label">${n.label}</span>
+    </div>
+  `).join('');
+
+  // ── Wire clicks ──
+  document.querySelectorAll('.nav-item[data-view]').forEach(el => {
+    el.addEventListener('click', () => {
+      const v = el.dataset.view;
+      if (v === '_pom') { togglePomodoro(); return; }
+      nav_to(v);
+    });
+  });
+}
+
+function nav_to(v) {
+  // If leaving manuscript editor, destroy Quill cleanly
+  if (APP.view === 'manuscript' && APP.msId && APP._quill) {
+    APP._quill = null;
+  }
+  APP.view = v;
+  APP.search = '';
+  const si = document.getElementById('search-input'); if(si) si.value = '';
+  if (v !== 'manuscript') { APP.msId = null; APP.msChapter = null; }
+  const ct = document.getElementById('content');
+  if (ct) {
+    if (['characters','lore','manuscript'].includes(v)) {
+      ct.style.padding = '0'; ct.style.overflow = 'hidden';
+    } else {
+      ct.style.padding = '28px 32px'; ct.style.overflow = 'auto';
+    }
+  }
+  buildSidebar();
+  renderContent();
+}
+
+function renderContent() {
+  const fn = VIEWS[APP.view] || renderDashboard;
+  const ct = document.getElementById('content');
+  if (!ct) return;
+
+  // If manuscript editor is open and Quill is mounted, don't re-render
+  // (Firestore snapshot updates would destroy the editor mid-typing)
+  if (APP.view === 'manuscript' && APP.msId && APP._quill) return;
+
+  if (['characters','lore','manuscript'].includes(APP.view)) {
+    ct.style.padding = '0';
+    ct.style.overflow = 'hidden';
+  } else {
+    ct.style.padding = '28px 32px';
+    ct.style.overflow = 'auto';
+  }
+  ct.innerHTML = fn();
+
+  setTimeout(() => {
+    if (APP.view === 'relationships' && APP.chars.length >= 2) drawRelGraph();
+  }, 60);
+}
+
+function renderAll() { buildSidebar(); renderContent(); }
+
+/* ════════════════════════════════════
+   DASHBOARD
+   ════════════════════════════════════ */
+function renderDashboard() {
+  // If no project selected, show the full home/projects page
+  if (!APP.project) return renderHomePage();
+
+  const totalWC  = APP.manuscripts.reduce((n, m) => n + wc(m.content||''), 0);
+  const streak   = (JSON.parse(localStorage.getItem('cfStreak')||'{}').streak)||0;
+  const tgt      = APP.project?.targetWords || 80000;
+  const pct      = Math.min(100, Math.round((totalWC / tgt) * 100));
+  const recent   = [
+    ...APP.chars.slice(0,2).map(c => ({ icon:'👤', label:c.name, sub:'character', view:'characters' })),
+    ...APP.lore.slice(0,2).map(l  => ({ icon:'📖', label:l.title, sub:'lore',      view:'lore'       })),
+    ...APP.notes.slice(0,2).map(n => ({ icon:'📝', label:n.title, sub:'note',      view:'notes'      })),
+  ].slice(0, 5);
+
+  return `<div class="view-root" id="view-dashboard">
+    <div class="page-header">
+      <div>
+        <div class="page-title">${esc(APP.project?.name || 'Dashboard')}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:3px">${esc(APP.project?.description || 'Your writing space')}</div>
+      </div>
+      <button class="btn btn-ghost" onclick="nav_to('dashboard');APP.project=null;renderAll()">⊞ All Projects</button>
+    </div>
+
+    <div class="grid-4" style="margin-bottom:22px">
+      ${[
+        { label:'Words Written',  val: totalWC.toLocaleString(),   desc:'total across manuscripts', color:'var(--accent)'  },
+        { label:'Characters',     val: APP.chars.length,           desc:'in this project',          color:'var(--teal)'   },
+        { label:'Writing Streak', val: streak + ' days',           desc:'keep it going!',           color:'var(--amber)'  },
+        { label:'Lore Entries',   val: APP.lore.length,            desc:'world records',            color:'var(--mint)'   },
+      ].map((s, i) => `
+        <div class="stat-card stagger-${i+1} view-root">
+          <div class="sec-label">${esc(s.label)}</div>
+          <div class="stat-value" style="color:${s.color}">${esc(String(s.val))}</div>
+          <div class="stat-desc">${esc(s.desc)}</div>
+        </div>`).join('')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px">
+      <div class="card" style="padding:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span class="sec-label">Writing Progress</span>
+          <span style="font-size:11px;color:var(--text3)">${pct}%</span>
+        </div>
+        <div class="prog-wrap" style="margin-bottom:8px"><div class="prog-bar" style="width:${pct}%"></div></div>
+        <div style="font-size:11px;color:var(--text3)">${totalWC.toLocaleString()} / ${tgt.toLocaleString()} word goal</div>
+      </div>
+      <div class="card" style="padding:20px">
+        <div class="sec-label" style="margin-bottom:12px">Quick Actions</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          ${[
+            { icon:'👤', label:'New Character', fn:"openCharModal()" },
+            { icon:'✍',  label:'New Chapter',   fn:"openNewManuscript()" },
+            { icon:'📖', label:'Add Lore',       fn:"openLoreModal()" },
+            { icon:'📝', label:'Quick Note',     fn:"openNewNote()" },
+          ].map(a => `
+            <button class="btn btn-ghost" onclick="${a.fn}" style="justify-content:flex-start;padding:10px 12px;font-size:12px">
+              <span>${a.icon}</span><span>${a.label}</span>
+            </button>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    ${recent.length ? `
+    <div class="card" style="padding:18px">
+      <div class="sec-label" style="margin-bottom:12px">Recent</div>
+      ${recent.map(r => `
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;transition:background 130ms"
+             onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background=''"
+             onclick="nav_to('${r.view}')">
+          <span style="font-size:16px">${r.icon}</span>
+          <span style="font-size:13px;font-weight:500">${esc(r.label||'Untitled')}</span>
+          <span style="font-size:11px;color:var(--text3);margin-left:auto;text-transform:capitalize">${r.sub}</span>
+        </div>`).join('')}
+    </div>` : ''}
+  </div>`;
+}
+
+function renderHomePage() {
+  return `<div class="view-root">
+    <!-- Hero -->
+    <div style="text-align:center;padding:48px 24px 36px;position:relative">
+      <div style="font-size:52px;margin-bottom:16px;line-height:1">🔥</div>
+      <h1 style="font-family:var(--write);font-size:36px;font-weight:600;color:var(--text);margin-bottom:10px;letter-spacing:-0.02em">Campfire Write</h1>
+      <p style="font-size:15px;color:var(--text2);max-width:400px;margin:0 auto;line-height:1.6">Your cozy creative writing studio. Build worlds, craft characters, and write stories you'll love.</p>
+    </div>
+
+    <!-- Projects grid -->
+    <div style="max-width:860px;margin:0 auto;padding:0 8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="sec-label">Your Projects (${APP.projects.length})</div>
+        <button class="btn btn-primary" onclick="openCreateProjectInline()">+ New Project</button>
+      </div>
+
+      <!-- Create form (hidden by default) -->
+      <div id="create-proj-form" style="display:none;background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:22px;margin-bottom:16px;animation:viewIn 200ms var(--ease-out)">
+        <div style="font-size:14px;font-weight:600;margin-bottom:16px;color:var(--text)">New Project</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <input id="hp-emoji" value="📚" style="width:50px;text-align:center;font-size:20px" maxlength="2">
+          <input id="hp-name" placeholder="Project name…" style="flex:1" autofocus>
+        </div>
+        <textarea id="hp-desc" rows="2" placeholder="What is this story about?" style="width:100%;margin-bottom:12px"></textarea>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+          <label style="font-size:12px;color:var(--text2);white-space:nowrap">Target words:</label>
+          <input type="number" id="hp-words" value="80000" step="5000" style="width:120px">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-ghost" onclick="document.getElementById('create-proj-form').style.display='none'">Cancel</button>
+          <button class="btn btn-primary" onclick="createProjectFromHome()">Create Project →</button>
+        </div>
+      </div>
+
+      <!-- Project cards grid -->
+      ${APP.projects.length === 0
+        ? `<div style="text-align:center;padding:60px 24px;background:var(--bg2);border:2px dashed var(--border2);border-radius:16px">
+            <div style="font-size:40px;margin-bottom:12px">📚</div>
+            <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:6px">No projects yet</div>
+            <div style="font-size:13px;color:var(--text3);margin-bottom:20px">Create your first project to start building your story world</div>
+            <button class="btn btn-primary" onclick="openCreateProjectInline()">+ Create First Project</button>
+          </div>`
+        : `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
+            ${APP.projects.map(p => `
+              <div onclick="selectProject('${p.id}')"
+                style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:22px;cursor:pointer;
+                       transition:border-color 150ms,transform 140ms var(--ease-out),box-shadow 140ms;position:relative;overflow:hidden"
+                onmouseenter="this.style.borderColor='var(--border3)';this.style.transform='translateY(-3px)';this.style.boxShadow='0 10px 32px rgba(0,0,0,0.18)'"
+                onmouseleave="this.style.borderColor='var(--border)';this.style.transform='';this.style.boxShadow=''">
+                <!-- accent line at top -->
+                <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--amber));border-radius:16px 16px 0 0;opacity:0.7"></div>
+                <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:14px">
+                  <div style="font-size:32px;line-height:1;flex-shrink:0">${esc(p.emoji||'📚')}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</div>
+                    <div style="font-size:12px;color:var(--text3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5">${esc(p.description||'No description')}</div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div style="font-size:11px;color:var(--text3)">${(p.targetWords||80000).toLocaleString()} word goal</div>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span style="font-size:11px;color:var(--accent);font-weight:500">Open →</span>
+                    <button class="btn btn-icon btn-ghost btn-sm" style="color:var(--coral);font-size:11px;z-index:2"
+                      onclick="event.stopPropagation();deleteProject('${p.id}')">✕</button>
+                  </div>
+                </div>
+              </div>`).join('')}
+          </div>`
+      }
+
+      <!-- Tips -->
+      <div style="margin-top:40px;padding:20px 24px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;display:flex;gap:16px;align-items:flex-start">
+        <span style="font-size:22px;flex-shrink:0">💡</span>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px">Getting started</div>
+          <div style="font-size:12px;color:var(--text3);line-height:1.7">Create a project, then use the sidebar to build characters, map your world, track your timeline, plan your plot — and write your manuscript. Everything saves automatically.</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+window.renderHomePage = renderHomePage;
+
+function openCreateProjectInline() {
+  const form = document.getElementById('create-proj-form');
+  if (form) { form.style.display = form.style.display === 'none' ? 'block' : 'none'; }
+  else { renderContent(); setTimeout(() => { const f2 = document.getElementById('create-proj-form'); if(f2) f2.style.display='block'; }, 50); }
+}
+window.openCreateProjectInline = openCreateProjectInline;
+
+async function createProjectFromHome() {
+  const name = document.getElementById('hp-name')?.value?.trim();
+  if (!name) { toast('Project name required','error'); return; }
+  const r = await addDoc(collection(DB,'projects'), {
+    name, emoji: document.getElementById('hp-emoji')?.value||'📚',
+    description: document.getElementById('hp-desc')?.value||'',
+    targetWords: parseInt(document.getElementById('hp-words')?.value)||80000,
+    createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+  });
+  const snap = await getDoc(doc(DB,'projects',r.id));
+  const p = { id:r.id, ...snap.data() };
+  APP.projects.push(p);
+  selectProject(r.id);
+  toast(`"${name}" created! Welcome to your story.`, 'success', 4000);
+}
+window.createProjectFromHome = createProjectFromHome;
+
+/* ════════════════════════════════════
+   CHARACTERS  (split-panel)
+   ════════════════════════════════════ */
+function renderCharacters() {
+  const filtered = APP.chars.filter(c =>
+    !APP.search || c.name?.toLowerCase().includes(APP.search.toLowerCase())
+  );
+  const sel = APP.charId ? APP.chars.find(c => c.id === APP.charId) : null;
+
+  return `<div class="split-layout">
+    <div class="split-list">
+      <div class="split-list-header">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="sec-label">Characters (${APP.chars.length})</span>
+          <button class="btn btn-primary btn-sm" onclick="openCharModal()">+ New</button>
+        </div>
+        <input placeholder="Search…" value="${esc(APP.search)}"
+          oninput="APP.search=this.value;rerenderSplitList('chars')"
+          style="width:100%;font-size:12px">
+      </div>
+      <div class="split-list-body" id="chars-list-body">
+        ${renderCharListItems(filtered)}
+      </div>
+    </div>
+    <div class="split-detail" id="char-detail-panel">
+      ${sel ? renderCharBento(sel) : `
+        <div class="empty-state">
+          <div class="icon">👤</div>
+          <h3>Select a character</h3>
+          <p>Choose from the list, or create one to see their full profile.</p>
+          <button class="btn btn-primary" style="margin-top:16px" onclick="openCharModal()">+ Create Character</button>
+        </div>`}
+    </div>
+  </div>`;
+}
+
+function renderCharListItems(list) {
+  if (!list.length) return `<div style="padding:20px;text-align:center;font-size:12px;color:var(--text3)">No characters yet<br><button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="openCharModal()">Create one</button></div>`;
+  return list.map(c => `
+    <div class="list-item${APP.charId === c.id ? ' active' : ''}" onclick="selectChar('${c.id}')">
+      <div class="char-av">
+        ${c.imageUrl ? `<img src="${esc(c.imageUrl)}">` : `<span>${c.name ? esc(c.name[0].toUpperCase()) : '?'}</span>`}
+      </div>
+      <div style="min-width:0;flex:1">
+        <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.name||'Unnamed')}</div>
+        <div style="font-size:11px;color:var(--text3)">${esc(c.role||'No role')}</div>
+      </div>
+    </div>`).join('');
+}
+
+function selectChar(id) {
+  APP.charId = id;
+  APP.charTab = 'overview';
+  const c = APP.chars.find(x => x.id === id);
+  const detail = document.getElementById('char-detail-panel');
+  const listBody = document.getElementById('chars-list-body');
+  // update active state in list
+  if (listBody) listBody.querySelectorAll('.list-item').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('onclick')?.includes(id));
+  });
+  if (detail && c) detail.innerHTML = renderCharBento(c);
+}
+window.selectChar = selectChar;
+
+function renderCharBento(c) {
+  const tab = APP.charTab || 'overview';
+  const rels = APP.rels.filter(r => r.charA === c.id || r.charB === c.id);
+  return `
+    <!-- BENTO HEADER ROW -->
+    <div style="display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:start;margin-bottom:20px">
+      <!-- Avatar -->
+      <div class="char-av-lg" style="cursor:pointer" onclick="document.getElementById('char-av-inp-${c.id}').click()" title="Change photo">
+        ${c.imageUrl ? `<img src="${esc(c.imageUrl)}">` : `<span style="font-size:36px">${c.name ? esc(c.name[0].toUpperCase()) : '?'}</span>`}
+        <input type="file" id="char-av-inp-${c.id}" accept="image/*" style="display:none"
+          onchange="updateCharAvatar(this,'${c.id}')">
+      </div>
+      <!-- Name / role / tags — all inline editable -->
+      <div>
+        <input value="${esc(c.name||'')}" placeholder="Name…"
+          style="font-family:var(--write);font-size:20px;font-weight:500;background:transparent;border:none;border-bottom:2px solid transparent;width:100%;color:var(--text);padding:2px 4px;margin-bottom:4px"
+          onfocus="this.style.borderBottomColor='var(--accent)'" onblur="this.style.borderBottomColor='transparent'"
+          onchange="dbUpdate('characters','${c.id}',{name:this.value}).then(()=>{const c2=APP.chars.find(x=>x.id==='${c.id}');if(c2)c2.name=this.value})">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+          <input value="${esc(c.role||'')}" placeholder="Role…"
+            style="font-size:12px;background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text3);padding:1px 4px;width:120px"
+            onfocus="this.style.borderBottomColor='var(--border2)'" onblur="this.style.borderBottomColor='transparent'"
+            onchange="dbUpdate('characters','${c.id}',{role:this.value})">
+          <span style="color:var(--text3)">·</span>
+          <input value="${esc(c.age||'')}" placeholder="Age…"
+            style="font-size:12px;background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text3);padding:1px 4px;width:80px"
+            onfocus="this.style.borderBottomColor='var(--border2)'" onblur="this.style.borderBottomColor='transparent'"
+            onchange="dbUpdate('characters','${c.id}',{age:this.value})">
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          ${(c.tags||[]).map(t => `<span class="tag">${esc(t)}</span>`).join('')}
+          <input value="${esc((c.tags||[]).join(', '))}" placeholder="+ tags…"
+            style="font-size:11px;background:transparent;border:none;border-bottom:1px dashed var(--border2);color:var(--text3);padding:1px 4px;width:90px"
+            onblur="dbUpdate('characters','${c.id}',{tags:this.value.split(',').map(t=>t.trim()).filter(Boolean)})"
+            title="Comma-separated tags">
+        </div>
+      </div>
+      <!-- Actions -->
+      <button class="btn btn-ghost btn-sm" style="color:var(--coral)"
+        onclick="if(confirm('Delete ${esc(c.name||'this character')}?')){dbDelete('characters','${c.id}');APP.charId=null;renderContent()}">Delete</button>
+    </div>
+
+    <!-- BENTO GRID -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;gap:12px">
+
+      <!-- Personality -->
+      <div class="bento-cell" style="grid-column:1;grid-row:1">
+        <div class="sec-label" style="margin-bottom:7px">✨ Personality</div>
+        <textarea placeholder="How they think, speak, and carry themselves…"
+          style="width:100%;min-height:90px;font-size:13px;line-height:1.7;resize:none;border:1px solid transparent;background:transparent"
+          onfocus="this.style.border='1px solid var(--border2)';this.style.background='var(--bg)'"
+          onblur="this.style.border='1px solid transparent';this.style.background='transparent';dbUpdate('characters','${c.id}',{personality:this.value})"
+          >${esc(c.personality||'')}</textarea>
+      </div>
+
+      <!-- Appearance -->
+      <div class="bento-cell" style="grid-column:2;grid-row:1">
+        <div class="sec-label" style="margin-bottom:7px">👁 Appearance</div>
+        <textarea placeholder="Physical description, style, how others see them…"
+          style="width:100%;min-height:90px;font-size:13px;line-height:1.7;resize:none;border:1px solid transparent;background:transparent"
+          onfocus="this.style.border='1px solid var(--border2)';this.style.background='var(--bg)'"
+          onblur="this.style.border='1px solid transparent';this.style.background='transparent';dbUpdate('characters','${c.id}',{appearance:this.value})"
+          >${esc(c.appearance||'')}</textarea>
+      </div>
+
+      <!-- Backstory -->
+      <div class="bento-cell" style="grid-column:1 / 3;grid-row:2">
+        <div class="sec-label" style="margin-bottom:7px">📜 Backstory & Motivation</div>
+        <textarea placeholder="Their history, what drives them, their deepest fear…"
+          style="width:100%;min-height:100px;font-size:13px;line-height:1.75;font-family:var(--write);resize:none;border:1px solid transparent;background:transparent"
+          onfocus="this.style.border='1px solid var(--border2)';this.style.background='var(--bg)'"
+          onblur="this.style.border='1px solid transparent';this.style.background='transparent';dbUpdate('characters','${c.id}',{background:this.value})"
+          >${esc(c.background||'')}</textarea>
+      </div>
+
+      <!-- Relationships -->
+      <div class="bento-cell" style="grid-column:1;grid-row:3">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+          <div class="sec-label">🕸 Relationships</div>
+          <button class="btn btn-ghost btn-sm" style="font-size:10px" onclick="openRelModal()">+ Add</button>
+        </div>
+        ${rels.length === 0
+          ? `<div style="font-size:12px;color:var(--text3)">None yet.</div>`
+          : rels.map(r => {
+              const other = APP.chars.find(ch => ch.id === (r.charA===c.id ? r.charB : r.charA));
+              return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+                <div class="char-av" style="width:26px;height:26px;font-size:12px;border-radius:6px">${other?.name?.[0]?.toUpperCase()||'?'}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:12px;font-weight:500">${esc(other?.name||'?')}</div>
+                  <div style="font-size:10px;color:var(--accent)">${esc(r.type||'related')}</div>
+                </div>
+              </div>`;
+            }).join('')
+        }
+      </div>
+
+      <!-- Notes -->
+      <div class="bento-cell" style="grid-column:2;grid-row:3">
+        <div class="sec-label" style="margin-bottom:7px">📝 Notes</div>
+        <textarea placeholder="Free-form notes, ideas, scenes involving this character…"
+          style="width:100%;min-height:120px;font-size:12px;line-height:1.7;font-family:'JetBrains Mono',monospace;resize:none;border:1px solid transparent;background:transparent"
+          onfocus="this.style.border='1px solid var(--border2)';this.style.background='var(--bg)'"
+          onblur="this.style.border='1px solid transparent';this.style.background='transparent';dbUpdate('characters','${c.id}',{charNotes:this.value})"
+          >${esc(c.charNotes||'')}</textarea>
+      </div>
+
+    </div>`;
+}
+
+async function updateCharAvatar(inp, cid) {
+  const f = inp.files[0]; if (!f || !APP.project) return;
+  try {
+    toast('Uploading…','info',1500);
+    const url = await uploadImg(f, `projects/${APP.project.id}/chars/${uid()}_${f.name}`);
+    await dbUpdate('characters', cid, { imageUrl: url });
+    const c = APP.chars.find(x => x.id === cid); if (c) c.imageUrl = url;
+    selectChar(cid);
+    toast('Avatar updated','success');
+  } catch(e) { toast('Upload failed','error'); }
+}
+window.updateCharAvatar = updateCharAvatar;
+
+function rerenderSplitList(type) {
+  if (type === 'chars') {
+    const filtered = APP.chars.filter(c =>
+      !APP.search || c.name?.toLowerCase().includes(APP.search.toLowerCase())
+    );
+    const body = document.getElementById('chars-list-body');
+    if (body) body.innerHTML = renderCharListItems(filtered);
+  } else if (type === 'lore') {
+    const filtered = APP.lore.filter(l =>
+      !APP.search || l.title?.toLowerCase().includes(APP.search.toLowerCase())
+    );
+    const body = document.getElementById('lore-list-body');
+    if (body) body.innerHTML = renderLoreListItems(filtered);
+  }
+}
+window.rerenderSplitList = rerenderSplitList;
+
+/* ══════════════════
+   LORE — split bento
+   ══════════════════ */
+function renderLore() {
+  const cats = [...new Set(APP.lore.map(l => l.category).filter(Boolean))];
+  const filtered = APP.lore.filter(l =>
+    !APP.search || l.title?.toLowerCase().includes(APP.search.toLowerCase()) || l.category?.toLowerCase().includes(APP.search.toLowerCase())
+  );
+  const sel = APP.loreId ? APP.lore.find(l => l.id === APP.loreId) : null;
+
+  return `<div class="split-layout">
+    <div class="split-list">
+      <div class="split-list-header">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="sec-label">Lore (${APP.lore.length})</span>
+          <button class="btn btn-primary btn-sm" onclick="openLoreModal()">+ New</button>
+        </div>
+        <input placeholder="Search…" value="${esc(APP.search)}"
+          oninput="APP.search=this.value;rerenderSplitList('lore')"
+          style="width:100%;font-size:12px">
+        ${cats.length ? `<div style="display:flex;gap:5px;flex-wrap:wrap">
+          ${cats.map(c => `<span class="tag" style="cursor:pointer;font-size:10px" onclick="APP.search='${esc(c)}';rerenderSplitList('lore')">${esc(c)}</span>`).join('')}
+        </div>` : ''}
+      </div>
+      <div class="split-list-body" id="lore-list-body">
+        ${renderLoreListItems(filtered)}
+      </div>
+    </div>
+    <div class="split-detail" id="lore-detail-panel">
+      ${sel ? renderLoreBento(sel) : `
+        <div class="empty-state">
+          <div class="icon">🌍</div>
+          <h3>Select a lore entry</h3>
+          <p>Document your world — places, magic systems, history, factions.</p>
+          <button class="btn btn-primary" style="margin-top:16px" onclick="openLoreModal()">+ Add Entry</button>
+        </div>`}
+    </div>
+  </div>`;
+}
+
+function renderLoreListItems(list) {
+  if (!list.length) return `<div style="padding:20px;text-align:center;font-size:12px;color:var(--text3)">No entries yet<br><button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="openLoreModal()">Add entry</button></div>`;
+  return list.map(l => `
+    <div class="list-item${APP.loreId === l.id ? ' active' : ''}" onclick="selectLore('${l.id}')">
+      <span style="font-size:18px">${esc(l.icon||'📄')}</span>
+      <div style="min-width:0;flex:1">
+        <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.title||'Untitled')}</div>
+        <div style="font-size:11px;color:var(--text3)">${esc(l.category||'Uncategorized')}</div>
+      </div>
+    </div>`).join('');
+}
+
+function selectLore(id) {
+  APP.loreId = id;
+  const l = APP.lore.find(x => x.id === id);
+  const detail = document.getElementById('lore-detail-panel');
+  const listBody = document.getElementById('lore-list-body');
+  if (listBody) listBody.querySelectorAll('.list-item').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('onclick')?.includes(id));
+  });
+  if (detail && l) detail.innerHTML = renderLoreBento(l);
+}
+window.selectLore = selectLore;
+
+function renderLoreBento(l) {
+  return `
+    <!-- Header row -->
+    <div style="display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;margin-bottom:18px">
+      <span style="font-size:36px;line-height:1">${esc(l.icon||'📄')}</span>
+      <div>
+        <input value="${esc(l.title||'')}" placeholder="Entry title…"
+          style="font-family:var(--write);font-size:20px;font-weight:500;background:transparent;border:none;border-bottom:2px solid transparent;width:100%;color:var(--text);padding:2px 4px;margin-bottom:5px"
+          onfocus="this.style.borderBottomColor='var(--accent)'" onblur="this.style.borderBottomColor='transparent'"
+          onchange="dbUpdate('lore','${l.id}',{title:this.value})">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input value="${esc(l.category||'')}" placeholder="Category…"
+            style="font-size:12px;background:transparent;border:none;border-bottom:1px solid transparent;color:var(--accent);padding:1px 4px;width:130px"
+            onfocus="this.style.borderBottomColor='var(--border2)'" onblur="this.style.borderBottomColor='transparent'"
+            onchange="dbUpdate('lore','${l.id}',{category:this.value})">
+          <input value="${esc(l.icon||'📄')}" placeholder="Icon"
+            style="font-size:13px;background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text3);padding:1px 4px;width:44px;text-align:center"
+            onfocus="this.style.borderBottomColor='var(--border2)'" onblur="this.style.borderBottomColor='transparent'"
+            maxlength="2" onchange="dbUpdate('lore','${l.id}',{icon:this.value})">
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="color:var(--coral)"
+        onclick="if(confirm('Delete this entry?')){dbDelete('lore','${l.id}');APP.loreId=null;renderContent()}">Delete</button>
+    </div>
+
+    <!-- Bento grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+      <!-- Image -->
+      <div class="bento-cell" style="grid-column:1 / 3" id="lore-img-bento-${l.id}">
+        ${l.imageUrl
+          ? `<img src="${esc(l.imageUrl)}" style="width:100%;max-height:180px;object-fit:cover;border-radius:9px;display:block;margin-bottom:4px">
+             <button class="btn btn-ghost btn-sm" onclick="document.getElementById('lore-img-inp-${l.id}').click()">Change image</button>`
+          : `<div class="img-drop" onclick="document.getElementById('lore-img-inp-${l.id}').click()">📷 Add cover image</div>`}
+        <input type="file" id="lore-img-inp-${l.id}" accept="image/*" style="display:none"
+          onchange="updateLoreImg(this,'${l.id}')">
+      </div>
+
+      <!-- Summary -->
+      <div class="bento-cell" style="grid-column:1 / 3">
+        <div class="sec-label" style="margin-bottom:6px">Summary</div>
+        <input value="${esc(l.summary||'')}" placeholder="One-line description…"
+          style="width:100%;font-style:italic;color:var(--text2);background:transparent;border:1px solid transparent;padding:6px 10px;border-radius:6px"
+          onfocus="this.style.border='1px solid var(--border2)';this.style.background='var(--bg)'"
+          onblur="this.style.border='1px solid transparent';this.style.background='transparent';dbUpdate('lore','${l.id}',{summary:this.value})">
+      </div>
+
+      <!-- Content -->
+      <div class="bento-cell" style="grid-column:1 / 3">
+        <div class="sec-label" style="margin-bottom:7px">Content</div>
+        <textarea placeholder="Full lore content — history, details, significance…"
+          style="width:100%;min-height:180px;font-size:13px;line-height:1.8;font-family:var(--write);resize:none;border:1px solid transparent;background:transparent"
+          onfocus="this.style.border='1px solid var(--border2)';this.style.background='var(--bg)'"
+          onblur="this.style.border='1px solid transparent';this.style.background='transparent';dbUpdate('lore','${l.id}',{content:this.value})"
+          >${esc(l.content||'')}</textarea>
+      </div>
+
+    </div>`;
+}
+
+async function updateLoreImg(inp, lid) {
+  const f = inp.files[0]; if (!f || !APP.project) return;
+  try {
+    toast('Uploading…','info',1500);
+    const url = await uploadImg(f, `projects/${APP.project.id}/lore/${uid()}_${f.name}`);
+    await dbUpdate('lore', lid, { imageUrl: url });
+    const l = APP.lore.find(x => x.id === lid); if (l) l.imageUrl = url;
+    selectLore(lid);
+    toast('Image updated','success');
+  } catch(e) { toast('Upload failed','error'); }
+}
+window.updateLoreImg = updateLoreImg;
+
+/* ══════════════════
+   RELATIONSHIPS
+   ══════════════════ */
+function renderRelationships() {
+  return `<div class="view-root">
+    <div class="page-header">
+      <div class="page-title">Relationship Web</div>
+      <button class="btn btn-primary" onclick="openRelModal()">+ Add Relationship</button>
+    </div>
+    ${APP.chars.length < 2
+      ? `<div class="empty-state"><div class="icon">🕸</div><h3>Need at least 2 characters</h3><p>Create characters first, then map how they relate.</p></div>`
+      : `<div id="rel-canvas-wrap" style="height:440px;margin-bottom:24px"><canvas id="rel-canvas"></canvas></div>`
+    }
+    <div class="sec-label" style="margin-bottom:10px">All Connections (${APP.rels.length})</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${APP.rels.map(r => {
+        const a = APP.chars.find(c => c.id === r.charA);
+        const b = APP.chars.find(c => c.id === r.charB);
+        if (!a || !b) return '';
+        return `<div class="card" style="padding:13px 16px;display:flex;align-items:center;gap:12px">
+          <div style="font-size:13px;font-weight:500;min-width:80px">${esc(a.name)}</div>
+          <div style="flex:1;text-align:center"><span class="tag tag-accent">${esc(r.type||'related')}</span></div>
+          <div style="font-size:13px;font-weight:500;min-width:80px;text-align:right">${esc(b.name)}</div>
+          <button class="btn btn-icon btn-ghost" style="color:var(--coral);font-size:12px"
+            onclick="if(confirm('Remove?'))dbDelete('relationships','${r.id}')">✕</button>
+        </div>`;
+      }).join('')}
+      ${APP.rels.length===0 ? `<div style="font-size:13px;color:var(--text3);padding:8px">No relationships yet.</div>` : ''}
+    </div>
+  </div>`;
+}
+
+/* ══════════════════
+   TIMELINE — fully editable
+   ══════════════════ */
+function renderTimeline() {
+  return `<div class="view-root">
+    <div class="page-header">
+      <div class="page-title">Timeline</div>
+      <button class="btn btn-primary" onclick="openEventModal()">+ Add Event</button>
+    </div>
+    ${APP.events.length === 0
+      ? `<div class="empty-state"><div class="icon">📅</div><h3>No events yet</h3><p>Plot your story's key moments chronologically.</p><button class="btn btn-primary" style="margin-top:14px" onclick="openEventModal()">+ First Event</button></div>`
+      : `<div class="tl-track">
+          ${APP.events.map((e,i) => `
+            <div class="tl-item">
+              <div class="tl-dot" style="background:${esc(e.color||'var(--accent)')}"></div>
+              <div class="card" style="padding:16px">
+                <div style="display:flex;align-items:flex-start;gap:12px">
+                  <div style="flex:1;display:grid;grid-template-columns:140px 1fr;gap:10px;align-items:start">
+                    <!-- Date -->
+                    <input value="${esc(e.date||'')}" placeholder="Date / marker…"
+                      style="font-size:10px;font-family:'JetBrains Mono',monospace;background:transparent;border:1px solid transparent;padding:3px 7px;border-radius:5px;color:var(--text3);height:auto"
+                      onfocus="this.style.border='1px solid var(--border2)';this.style.background='var(--bg3)'"
+                      onblur="this.style.border='1px solid transparent';this.style.background='transparent';dbUpdate('events','${e.id}',{date:this.value})"
+                      title="Click to edit date">
+                    <!-- Title -->
+                    <input value="${esc(e.title||'')}" placeholder="Event title…"
+                      style="font-size:15px;font-weight:500;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text);width:100%;padding:2px 4px"
+                      onfocus="this.style.borderBottomColor='var(--accent)'" onblur="this.style.borderBottomColor='transparent'"
+                      onchange="dbUpdate('events','${e.id}',{title:this.value})">
+                  </div>
+                  <!-- Color dots + delete -->
+                  <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                    ${['var(--accent)','var(--amber)','var(--teal)','var(--coral)','var(--mint)','var(--blue)'].map(col => `
+                      <div style="width:14px;height:14px;border-radius:50%;background:${col};cursor:pointer;border:2px solid ${e.color===col?'var(--text)':'transparent'};transition:transform 110ms"
+                        onclick="dbUpdate('events','${e.id}',{color:'${col}'}).then(()=>{const ev2=APP.events.find(x=>x.id==='${e.id}');if(ev2)ev2.color='${col}';document.querySelector('[data-tl-dot-${e.id}]').style.background='${col}'})"
+                        title="Set color"></div>`).join('')}
+                    <button class="btn btn-icon btn-ghost btn-sm" style="color:var(--text3)"
+                      onclick="if(confirm('Delete event?'))dbDelete('events','${e.id}')">✕</button>
+                  </div>
+                </div>
+                <!-- Description -->
+                <textarea placeholder="Describe what happens…"
+                  style="width:100%;margin-top:10px;font-size:13px;line-height:1.65;min-height:60px;resize:none;border:1px solid transparent;background:transparent"
+                  onfocus="this.style.border='1px solid var(--border2)';this.style.background='var(--bg3)'"
+                  onblur="this.style.border='1px solid transparent';this.style.background='transparent';dbUpdate('events','${e.id}',{description:this.value})"
+                  >${esc(e.description||'')}</textarea>
+                <!-- Characters -->
+                ${APP.chars.length ? `
+                <div style="margin-top:8px;display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+                  <span style="font-size:10px;color:var(--text3)">Characters:</span>
+                  ${APP.chars.map(ch => `
+                    <label style="display:flex;align-items:center;gap:3px;font-size:11px;cursor:pointer;padding:3px 7px;border-radius:6px;border:1px solid ${(e.characters||[]).includes(ch.id)?'var(--accent)':'var(--border)'};background:${(e.characters||[]).includes(ch.id)?'var(--acbg)':'transparent'};color:${(e.characters||[]).includes(ch.id)?'var(--accent)':'var(--text3)'}">
+                      <input type="checkbox" value="${ch.id}" ${(e.characters||[]).includes(ch.id)?'checked':''}
+                        style="width:auto;background:none;border:none;height:auto;padding:0"
+                        onchange="toggleEvtChar('${e.id}','${ch.id}',this.checked)"> ${esc(ch.name)}
+                    </label>`).join('')}
+                </div>` : ''}
+              </div>
+            </div>`).join('')}
+        </div>`
+    }
+  </div>`;
+}
+
+async function toggleEvtChar(evtId, charId, checked) {
+  const ev = APP.events.find(x => x.id === evtId); if (!ev) return;
+  const chars = checked
+    ? [...new Set([...(ev.characters||[]), charId])]
+    : (ev.characters||[]).filter(id => id !== charId);
+  await dbUpdate('events', evtId, { characters: chars });
+  ev.characters = chars;
+}
+window.toggleEvtChar = toggleEvtChar;
+
+/* ══════════════════
+   PLOT & ARCS
+   ══════════════════ */
+function renderPlot() {
+  const phases = ['planned','writing','done'];
+  const scenes = APP.manuscripts.flatMap(m => (m.scenes||[]).map(s => ({...s, msId:m.id, msTitle:m.title})));
+  return `<div class="view-root" style="height:100%;display:flex;flex-direction:column">
+    <div class="page-header" style="flex-shrink:0">
+      <div class="page-title">Plot & Arcs</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="openArcModal()">+ Arc</button>
+        <button class="btn btn-primary" onclick="openSceneModal()">+ Scene</button>
+      </div>
+    </div>
+    ${(APP.project?.arcs||[]).length ? `
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;flex-shrink:0">
+        ${(APP.project?.arcs||[]).map(a => `
+          <div style="padding:8px 14px;border-radius:8px;border-left:3px solid ${esc(a.color||'var(--accent)')};background:var(--bg2);font-size:12px;font-weight:500">${esc(a.name)}</div>
+        `).join('')}
+      </div>` : ''}
+    <div class="kanban-board" style="flex:1;overflow-y:hidden">
+      ${phases.map(ph => `
+        <div class="kanban-col">
+          <div class="kanban-col-head">${ph==='planned'?'📋 Planned':ph==='writing'?'✍ Writing':'✅ Done'}</div>
+          <div class="kanban-cards" id="kc-${ph}"
+               ondragover="event.preventDefault();this.classList.add('drag-over')"
+               ondragleave="this.classList.remove('drag-over')"
+               ondrop="dropScene(event,'${ph}')">
+            ${scenes.filter(s=>s.phase===ph).map(s=>`
+              <div class="scene-card" draggable="true"
+                   ondragstart="dragScene(event,'${s.id}','${s.msId}')">
+                <div style="font-weight:500;margin-bottom:3px">${esc(s.title||'Untitled')}</div>
+                <div style="font-size:11px;color:var(--text3)">${esc(s.msTitle||'')}</div>
+              </div>`).join('')}
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* ══════════════════
+   MANUSCRIPT — stable Quill, no re-render on type
+   ══════════════════ */
+function renderManuscript() {
+  if (!APP.msId) {
+    return `<div class="view-root" style="padding:28px 32px">
+      <div class="page-header">
+        <div class="page-title">Manuscripts</div>
+        <button class="btn btn-primary" onclick="openNewManuscript()">+ New Manuscript</button>
+      </div>
+      ${APP.manuscripts.length === 0
+        ? `<div class="empty-state"><div class="icon">✍</div><h3>Nothing written yet</h3><p>Your manuscripts, chapters and scenes live here.</p><button class="btn btn-primary" style="margin-top:14px" onclick="openNewManuscript()">+ Start Writing</button></div>`
+        : `<div style="display:flex;flex-direction:column;gap:10px">
+            ${APP.manuscripts.map(m => `
+              <div class="card card-hover" style="padding:18px 20px"
+                onclick="openMs('${m.id}')">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div>
+                    <div style="font-size:16px;font-weight:500;margin-bottom:3px">${esc(m.title||'Untitled')}</div>
+                    <div style="font-size:12px;color:var(--text3)">${wc(m.content||'').toLocaleString()} words · ${fmtDate(m.updatedAt)}</div>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <span class="tag tag-accent">${esc(m.status||'draft')}</span>
+                    <button class="btn btn-icon btn-ghost" style="color:var(--coral);font-size:12px"
+                      onclick="event.stopPropagation();if(confirm('Delete?'))dbDelete('manuscripts','${m.id}')">✕</button>
+                  </div>
+                </div>
+              </div>`).join('')}
+          </div>`
+      }
+    </div>`;
+  }
+
+  const ms = APP.manuscripts.find(m => m.id === APP.msId);
+  if (!ms) { APP.msId = null; return renderManuscript(); }
+  const chs = ms.chapters || [];
+  const ci  = APP.msChapter !== null ? APP.msChapter : null;
+  const chContent = ci !== null ? (chs[ci]?.content||'') : (ms.content||'');
+
+  return `<div class="ms-shell">
+    <div class="ms-chapters">
+      <div class="ms-ch-head">
+        <button class="btn btn-ghost btn-sm" onclick="closeMs()">← Back</button>
+        <button class="btn btn-icon btn-ghost btn-sm" onclick="addChapter('${ms.id}')" title="Add chapter" style="font-size:16px">+</button>
+      </div>
+      <div class="ms-ch-body">
+        <div style="font-size:11px;font-weight:600;color:var(--text3);padding:8px 8px 4px;text-transform:uppercase;letter-spacing:0.09em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(ms.title)}">${esc(ms.title)}</div>
+        ${chs.length === 0
+          ? `<div class="ch-item active" onclick="switchChapter(null)">Main Draft</div>`
+          : chs.map((ch, i) => `
+              <div class="ch-item${ci===i?' active':''}" onclick="switchChapter(${i})">${esc(ch.title||`Chapter ${i+1}`)}</div>
+            `).join('')}
+        <div style="padding:10px 10px 0;font-size:11px;color:var(--text3)" id="ms-wc">${wc(chContent).toLocaleString()} words</div>
+      </div>
+    </div>
+    <div class="ms-center">
+      <div class="ms-topbar">
+        <input type="text" id="ms-title-input" value="${esc(ms.title)}" placeholder="Manuscript title…"
+          style="background:transparent;border:1px solid transparent;border-radius:6px;font-size:13px;font-weight:500;color:var(--text);height:auto;padding:4px 8px"
+          onfocus="this.style.borderColor='var(--border2)'" onblur="this.style.borderColor='transparent'"
+          onchange="dbUpdate('manuscripts','${ms.id}',{title:this.value})">
+        <div style="flex:1"></div>
+        <span style="font-size:11px;color:var(--text3);margin-right:6px" id="ms-wc-top">${wc(chContent).toLocaleString()} words</span>
+        <select id="ms-status-select" onchange="dbUpdate('manuscripts','${ms.id}',{status:this.value})"
+          style="height:26px;font-size:11px;padding:0 8px;width:auto">
+          ${['draft','revision','final'].map(st => `<option value="${st}"${ms.status===st?' selected':''}>${st.charAt(0).toUpperCase()+st.slice(1)}</option>`).join('')}
+        </select>
+        <span style="font-size:10px;color:var(--text3);margin-left:8px" id="ms-saved-lbl">Autosave on</span>
+      </div>
+      <div class="ms-editor-wrap" id="ms-editor-wrap">
+        <div id="ms-quill-host"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openMs(msId) {
+  APP.msId = msId;
+  APP.msChapter = null;
+  APP.view = 'manuscript';
+  const ct = document.getElementById('content');
+  ct.style.padding = '0';
+  ct.style.overflow = 'hidden';
+  ct.innerHTML = renderManuscript();
+  buildSidebar();
+  setTimeout(mountQuill, 60);
+}
+window.openMs = openMs;
+
+function closeMs() {
+  // destroy quill first
+  if (APP._quill) { try { APP._quill = null; } catch(e){} }
+  APP.msId = null;
+  APP.msChapter = null;
+  APP.view = 'manuscript';
+  const ct = document.getElementById('content');
+  ct.style.padding = '28px 32px';
+  ct.style.overflow = 'auto';
+  ct.innerHTML = renderManuscript();
+  buildSidebar();
+}
+window.closeMs = closeMs;
+
+function switchChapter(idx) {
+  if (!APP.msId) return;
+  const ms = APP.manuscripts.find(m => m.id === APP.msId); if (!ms) return;
+  // Save current quill content before switching
+  if (APP._quill) {
+    const html = APP._quill.root.innerHTML;
+    const ci = APP.msChapter;
+    if (ci !== null) {
+      const chs = [...(ms.chapters||[])]; chs[ci] = {...chs[ci], content: html};
+      dbUpdate('manuscripts', ms.id, { chapters: chs });
+    } else {
+      dbUpdate('manuscripts', ms.id, { content: html });
+    }
+    APP._quill = null;
+  }
+  APP.msChapter = idx;
+  // update chapter list highlight
+  document.querySelectorAll('.ch-item').forEach((el, i) => {
+    if (idx === null) el.classList.toggle('active', i === 0 && ms.chapters?.length === 0);
+    else el.classList.toggle('active', i === idx);
+  });
+  // load new content into quill container
+  const wrap = document.getElementById('ms-editor-wrap');
+  if (wrap) {
+    wrap.innerHTML = '<div id="ms-quill-host"></div>';
+    setTimeout(mountQuill, 40);
+  }
+}
+window.switchChapter = switchChapter;
+
+function mountQuill() {
+  const ms = APP.manuscripts.find(m => m.id === APP.msId); if (!ms) return;
+  const host = document.getElementById('ms-quill-host');
+  if (!host || !window.Quill) return;
+  // Clear any existing quill
+  APP._quill = null;
+  const ci = APP.msChapter;
+  const content = ci !== null ? ((ms.chapters||[])[ci]?.content||'') : (ms.content||'');
+
+  const q = new Quill(host, {
+    theme: 'snow',
+    modules: {
+      toolbar: { container: [
+        [{ header: [1,2,3,false] }],
+        ['bold','italic','underline','strike'],
+        [{ align: [] }, { align: 'center' }, { align: 'right' }, { align: 'justify' }],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['blockquote','code-block'],
+        [{ indent: '-1' }, { indent: '+1' }],
+        ['link','clean']
+      ]}
+    },
+    placeholder: 'Your story begins here…'
+  });
+
+  if (content) {
+    q.root.innerHTML = content;
+  }
+  q.focus();
+
+  let _saveTimeout;
+  q.on('text-change', (_, __, src) => {
+    if (src !== 'user') return;
+    const html = q.root.innerHTML;
+    const words = wc(html);
+    const wcEl = document.getElementById('ms-wc');
+    const wcTop = document.getElementById('ms-wc-top');
+    if (wcEl) wcEl.textContent = words.toLocaleString() + ' words';
+    if (wcTop) wcTop.textContent = words.toLocaleString() + ' words';
+    clearTimeout(_saveTimeout);
+    _saveTimeout = setTimeout(async () => {
+      if (ci !== null) {
+        const chs = [...(ms.chapters||[])]; chs[ci] = {...chs[ci], content: html};
+        await dbUpdate('manuscripts', ms.id, { chapters: chs });
+      } else {
+        await dbUpdate('manuscripts', ms.id, { content: html });
+      }
+      updateStreak();
+      const lbl = document.getElementById('ms-saved-lbl');
+      if (lbl) { lbl.textContent = '✓ Saved'; setTimeout(() => { if(lbl) lbl.textContent = 'Autosave on'; }, 2000); }
+    }, 1000);
+  });
+
+  APP._quill = q;
+}
+
+/* ══════════════════
+   NOTES
+   ══════════════════ */
+function renderNotes() {
+  const filtered = APP.notes.filter(n =>
+    !APP.search || n.title?.toLowerCase().includes(APP.search.toLowerCase())
+  );
+  return `<div class="view-root">
+    <div class="page-header">
+      <div class="page-title">Notes</div>
+      <button class="btn btn-primary" onclick="openNewNote()">+ New Note</button>
+    </div>
+    <input placeholder="Search notes…" value="${esc(APP.search)}"
+      oninput="APP.search=this.value;renderContent()" style="width:280px;margin-bottom:18px">
+    ${filtered.length === 0
+      ? `<div class="empty-state"><div class="icon">📝</div><h3>No notes yet</h3><p>Capture ideas, plot thoughts, character moments before they disappear.</p><button class="btn btn-primary" style="margin-top:14px" onclick="openNewNote()">+ First Note</button></div>`
+      : `<div class="grid-2">
+          ${filtered.map(n => `
+            <div class="card card-hover" style="padding:18px" onclick="openNoteDetail('${n.id}')">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px">
+                <div style="font-size:14px;font-weight:500">${esc(n.title||'Untitled')}</div>
+                <button class="btn btn-icon btn-ghost btn-sm" style="color:var(--text3)"
+                  onclick="event.stopPropagation();if(confirm('Delete note?'))dbDelete('notes','${n.id}')">✕</button>
+              </div>
+              <div style="font-size:12px;color:var(--text3);line-height:1.65;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden">
+                ${esc((n.content||'Empty').replace(/[#*_\`>~]/g,''))}
+              </div>
+              <div style="font-size:10px;color:var(--text3);margin-top:10px">${fmtDate(n.updatedAt||n.createdAt)}</div>
+            </div>`).join('')}
+        </div>`
+    }
+  </div>`;
+}
+
+/* ══════════════════
+   SETTINGS
+   ══════════════════ */
+function renderSettings() {
+  const themes = [
+    { id:'campfire',  label:'🔥 Campfire',  desc:'Warm amber, cozy' },
+    { id:'midnight',  label:'🌙 Midnight',  desc:'Deep blue, focused' },
+    { id:'sakura',    label:'🌸 Sakura',    desc:'Soft pink, calm' },
+    { id:'parchment', label:'📜 Parchment', desc:'Warm ivory, classic' },
+  ];
+  const fonts = [
+    { id:'literary', label:'Literary', desc:'Lora writing + DM Sans UI'  },
+    { id:'serif',    label:'Full Serif',desc:'Lora throughout'            },
+    { id:'display',  label:'Display',  desc:'Playfair Display writing'   },
+    { id:'sans',     label:'Sans-Serif',desc:'DM Sans throughout'        },
+    { id:'mono',     label:'Monospace', desc:'JetBrains Mono'            },
+  ];
+  return `<div class="view-root" style="max-width:580px">
+    <div class="page-header"><div class="page-title">Settings</div></div>
+    <div class="card" style="padding:22px;margin-bottom:16px">
+      <div class="sec-label" style="margin-bottom:14px">Theme</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${themes.map(t => `
+          <div class="theme-swatch${APP.cfg.theme===t.id?' selected':''}" onclick="setTheme('${t.id}')">
+            <div style="font-size:14px;font-weight:500;margin-bottom:3px">${t.label}</div>
+            <div style="font-size:11px;color:var(--text2)">${t.desc}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="card" style="padding:22px;margin-bottom:16px">
+      <div class="sec-label" style="margin-bottom:14px">Writing Font</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${fonts.map(f => `
+          <div class="font-opt${APP.cfg.font===f.id?' selected':''}" onclick="setFont('${f.id}')">
+            <span style="font-size:13px;font-weight:500">${f.label}</span>
+            <span style="font-size:11px;color:var(--text3)">${f.desc}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="card" style="padding:22px;margin-bottom:16px">
+      <div class="sec-label" style="margin-bottom:14px">Goals & Timer</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Daily word goal</label>
+          <input type="number" value="${APP.cfg.dailyGoal||500}" min="50" step="50"
+            onchange="APP.cfg.dailyGoal=parseInt(this.value)" style="width:100%">
+        </div>
+        <div class="form-group">
+          <label>Pomodoro duration</label>
+          <select onchange="APP.cfg.pomMins=parseInt(this.value)" style="width:100%">
+            ${[15,20,25,30,45,60].map(m=>`<option value="${m}"${(APP.cfg.pomMins||25)===m?' selected':''}>${m} min</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+  </div>`;
+}
+
+function setTheme(t) {
+  APP.cfg.theme = t;
+  document.documentElement.setAttribute('data-theme', t);
+  renderContent(); // re-render to update selected state
+}
+function setFont(f) {
+  APP.cfg.font = f;
+  document.documentElement.setAttribute('data-font', f);
+  renderContent();
+}
+async function saveSettings() {
+  await setDoc(doc(DB,'settings','global'), { ...APP.cfg, updatedAt: serverTimestamp() });
+  toast('Settings saved', 'success');
+}
+window.setTheme = setTheme; window.setFont = setFont; window.saveSettings = saveSettings;
+
+/* ════════════════════════════════════
+   RELATIONSHIP GRAPH
+   ════════════════════════════════════ */
+function drawRelGraph() {
+  const canvas = document.getElementById('rel-canvas'); if (!canvas) return;
+  const wrap   = document.getElementById('rel-canvas-wrap');
+  canvas.width  = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  const ctx = canvas.getContext('2d');
+  const isDark = ['campfire','midnight'].includes(APP.cfg.theme);
+  const textCol  = isDark ? 'rgba(237,228,204,0.9)'  : 'rgba(40,16,8,0.85)';
+  const lineCol  = isDark ? 'rgba(232,145,74,0.25)'  : 'rgba(138,62,20,0.2)';
+  const nodeFill = isDark ? '#2a2418' : '#f0e8d0';
+  const nodeStroke = isDark ? 'rgba(232,145,74,0.7)' : 'rgba(138,62,20,0.65)';
+  const cx = canvas.width/2, cy = canvas.height/2;
+  const n = APP.chars.length;
+  const r = Math.min(cx, cy) * 0.65;
+  const pos = APP.chars.map((c,i) => {
+    const a = (i/n) * 2*Math.PI - Math.PI/2;
+    return { id:c.id, name:c.name, x:cx+r*Math.cos(a), y:cy+r*Math.sin(a) };
+  });
+  APP.rels.forEach(rel => {
+    const a = pos.find(p=>p.id===rel.charA), b = pos.find(p=>p.id===rel.charB);
+    if (!a||!b) return;
+    ctx.beginPath(); ctx.strokeStyle=lineCol; ctx.lineWidth=1.5;
+    ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    if (rel.type) {
+      ctx.fillStyle = isDark ? 'rgba(232,145,74,0.5)' : 'rgba(138,62,20,0.5)';
+      ctx.font = '10px DM Sans,sans-serif'; ctx.textAlign='center';
+      ctx.fillText(rel.type, (a.x+b.x)/2, (a.y+b.y)/2 - 4);
+    }
+  });
+  pos.forEach(p => {
+    const nr = 30;
+    ctx.beginPath(); ctx.arc(p.x,p.y,nr+5,0,2*Math.PI);
+    ctx.fillStyle = isDark ? 'rgba(232,145,74,0.08)' : 'rgba(138,62,20,0.07)'; ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x,p.y,nr,0,2*Math.PI);
+    ctx.fillStyle=nodeFill; ctx.fill(); ctx.strokeStyle=nodeStroke; ctx.lineWidth=2; ctx.stroke();
+    ctx.fillStyle=textCol; ctx.font='bold 11px DM Sans,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    const nm = p.name||'?';
+    ctx.fillText(nm.length>10?nm.slice(0,9)+'…':nm, p.x, p.y);
+  });
+}
+
+/* ════════════════════════════════════
+   POMODORO
+   ════════════════════════════════════ */
+function togglePomodoro() {
+  if (APP.pomOn) {
+    clearInterval(APP._pomInterval);
+    APP.pomOn = false;
+    document.getElementById('pom-widget')?.remove();
+    buildSidebar();
+  } else {
+    const total = (APP.cfg.pomMins||25) * 60;
+    APP.pomOn = true; APP.pomTime = total; APP.pomTotal = total;
+    buildSidebar();
+    const el = document.createElement('div');
+    el.id = 'pom-widget'; el.className = 'pom-widget';
+    el.innerHTML = `
+      <svg width="40" height="40" viewBox="0 0 40 40" style="transform:rotate(-90deg)">
+        <circle cx="20" cy="20" r="16" fill="none" stroke="var(--border2)" stroke-width="3"/>
+        <circle id="pom-ring" cx="20" cy="20" r="16" fill="none" stroke="var(--accent)"
+          stroke-width="3" stroke-linecap="round"
+          stroke-dasharray="${2*Math.PI*16}"
+          stroke-dashoffset="${2*Math.PI*16*(1-APP.pomTime/APP.pomTotal)}"/>
+      </svg>
+      <div>
+        <div id="pom-time" style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500">${fmtTime(APP.pomTime)}</div>
+        <div style="font-size:10px;color:var(--text3)">Focus session</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="togglePomodoro()">Stop</button>`;
+    document.body.appendChild(el);
+    APP._pomInterval = setInterval(() => {
+      APP.pomTime--;
+      if (APP.pomTime <= 0) {
+        clearInterval(APP._pomInterval); APP.pomOn=false;
+        document.getElementById('pom-widget')?.remove();
+        toast('🍅 Session complete! Take a break.','success',5000);
+        updateStreak(); buildSidebar(); return;
+      }
+      const t  = document.getElementById('pom-time');     if(t)  t.textContent = fmtTime(APP.pomTime);
+      const rg = document.getElementById('pom-ring');
+      if (rg) { const c=2*Math.PI*16; rg.setAttribute('stroke-dashoffset', c*(1-APP.pomTime/APP.pomTotal)); }
+    }, 1000);
+  }
+}
+window.togglePomodoro = togglePomodoro;
+
+function updateStreak() {
+  const today = new Date().toDateString();
+  const st    = JSON.parse(localStorage.getItem('cfStreak')||'{}');
+  if (st.lastDay !== today) {
+    const yest = new Date(Date.now()-86400000).toDateString();
+    st.streak  = st.lastDay===yest ? (st.streak||0)+1 : 1;
+    st.lastDay = today;
+    localStorage.setItem('cfStreak', JSON.stringify(st));
+  }
+}
+
+/* ════════════════════════════════════
+   PROJECTS MODAL
+   ════════════════════════════════════ */
+function openProjectsModal() {
+  openModal(`<div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Projects</span>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal()">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      ${APP.projects.map(p => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;
+             border-radius:10px;border:2px solid ${APP.project?.id===p.id?'var(--accent)':'var(--border)'};
+             cursor:pointer;transition:border-color 130ms"
+             onclick="selectProject('${p.id}');closeModal()">
+          <span style="font-size:22px">${esc(p.emoji||'📚')}</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:500">${esc(p.name)}</div>
+            <div style="font-size:11px;color:var(--text3)">${esc(p.description||'No description')}</div>
+          </div>
+          ${APP.project?.id===p.id?`<span class="tag tag-accent">Active</span>`:''}
+          <button class="btn btn-icon btn-ghost btn-sm" style="color:var(--coral)"
+            onclick="event.stopPropagation();deleteProject('${p.id}')">✕</button>
+        </div>`).join('')}
+      ${!APP.projects.length ? `<div style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">No projects yet — create one below.</div>` : ''}
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:16px">
+      <div class="sec-label" style="margin-bottom:12px">New Project</div>
+      <div class="form-group">
+        <label>Emoji + Name</label>
+        <div style="display:flex;gap:8px">
+          <input id="pj-emoji" value="📚" style="width:50px;text-align:center;font-size:20px" maxlength="2">
+          <input id="pj-name"  placeholder="Project name…" style="flex:1">
+        </div>
+      </div>
+      <div class="form-group"><label>Description</label>
+        <textarea id="pj-desc" rows="2" placeholder="What's this story about?" style="width:100%"></textarea></div>
+      <div class="form-group"><label>Target words</label>
+        <input type="number" id="pj-words" value="80000" step="5000" style="width:140px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="createProject()">Create Project</button>
+    </div>
+  </div>`);
+}
+window.openProjectsModal = openProjectsModal;
+
+async function createProject() {
+  const name = document.getElementById('pj-name')?.value?.trim();
+  if (!name) { toast('Project name required','error'); return; }
+  const ref = await addDoc(collection(DB,'projects'), {
+    name, emoji: document.getElementById('pj-emoji')?.value||'📚',
+    description: document.getElementById('pj-desc')?.value||'',
+    targetWords: parseInt(document.getElementById('pj-words')?.value)||80000,
+    createdAt: serverTimestamp(), updatedAt: serverTimestamp()
+  });
+  const snap = await getDoc(doc(DB,'projects',ref.id));
+  const p = { id:ref.id, ...snap.data() };
+  APP.projects.push(p);
+  selectProject(ref.id); closeModal();
+  toast(`"${name}" created!`, 'success');
+}
+window.createProject = createProject;
+
+function selectProject(id) {
+  const p = APP.projects.find(x => x.id===id); if (!p) return;
+  APP.project = p;
+  APP.chars=[]; APP.lore=[]; APP.events=[]; APP.rels=[]; APP.manuscripts=[]; APP.notes=[];
+  APP.msId=null; APP.charId=null; APP.loreId=null;
+  APP.view = 'dashboard';
+  loadProject(id);
+  localStorage.setItem('lastProjectId', id);
+  const ptEl = document.getElementById('proj-title');
+  if (ptEl) ptEl.value = p.name;
+  renderAll();
+  toast(`Opened "${p.name}"`, 'success', 2500);
+}
+window.selectProject = selectProject;
+
+async function deleteProject(id) {
+  if (!confirm('Delete this project and all its data?')) return;
+  await deleteDoc(doc(DB,'projects',id));
+  APP.projects = APP.projects.filter(p => p.id!==id);
+  if (APP.project?.id===id) { APP.project=null; APP.view='dashboard'; renderAll(); }
+  closeModal(); openProjectsModal();
+  toast('Project deleted','info');
+}
+window.deleteProject = deleteProject;
+
+/* ════════════════════════════════════
+   CHARACTER MODAL
+   ════════════════════════════════════ */
+function openCharModal(cid=null) {
+  const c = cid ? APP.chars.find(x=>x.id===cid) : null;
+  openModal(`<div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title">${c?'Edit Character':'New Character'}</span>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal()">✕</button>
+    </div>
+    <div id="char-img-area" class="${c?.imageUrl?'':'img-drop'}"
+         onclick="${c?.imageUrl?'':'document.getElementById(\'char-img-input\').click()'}">
+      ${c?.imageUrl
+        ? `<img src="${esc(c.imageUrl)}" id="char-img-preview" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:10px">`
+        : `<div style="font-size:28px;margin-bottom:5px">📷</div><div>Upload character image</div><div style="font-size:11px;color:var(--text3);margin-top:3px">Click to browse</div>`}
+    </div>
+    ${c?.imageUrl?`<button class="btn btn-ghost btn-sm" onclick="document.getElementById('char-img-input').click()" style="margin-bottom:10px">Change image</button>`:''}
+    <input type="file" id="char-img-input" accept="image/*" style="display:none" onchange="previewCharImage(this)">
+    <div class="form-group"><label>Name *</label><input id="c-name" value="${esc(c?.name||'')}" placeholder="Full name…" style="width:100%"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Role</label><input id="c-role" value="${esc(c?.role||'')}" placeholder="Protagonist, mentor…" style="width:100%"></div>
+      <div class="form-group"><label>Age</label><input id="c-age" value="${esc(c?.age||'')}" placeholder="Age or era" style="width:100%"></div>
+    </div>
+    <div class="form-group"><label>Appearance</label><textarea id="c-appearance" rows="2" style="width:100%">${esc(c?.appearance||'')}</textarea></div>
+    <div class="form-group"><label>Personality</label><textarea id="c-personality" rows="2" style="width:100%">${esc(c?.personality||'')}</textarea></div>
+    <div class="form-group"><label>Background & Motivation</label><textarea id="c-bg" rows="3" placeholder="Their history and what drives them…" style="width:100%">${esc(c?.background||'')}</textarea></div>
+    <div class="form-group"><label>Tags (comma-separated)</label><input id="c-tags" value="${esc((c?.tags||[]).join(','))}" placeholder="hero, mage, rival…" style="width:100%"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveChar('${cid||''}')">Save Character</button>
+    </div>
+  </div>`);
+}
+window.openCharModal = openCharModal;
+
+function previewCharImage(inp) {
+  const f = inp.files[0]; if (!f) return;
+  const area = document.getElementById('char-img-area');
+  if (area) {
+    area.className = ''; area.onclick = null;
+    area.innerHTML = `<img src="${URL.createObjectURL(f)}" id="char-img-preview" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;margin-bottom:10px">`;
+  }
+  window._charImgFile = f;
+}
+window.previewCharImage = previewCharImage;
+
+async function saveChar(cid) {
+  const name = document.getElementById('c-name')?.value?.trim();
+  if (!name) { toast('Name is required','error'); return; }
+  if (!APP.project) { toast('Select a project first','error'); return; }
+  let imageUrl = cid ? APP.chars.find(c=>c.id===cid)?.imageUrl : null;
+  if (window._charImgFile) {
+    try { imageUrl = await uploadImg(window._charImgFile, `projects/${APP.project.id}/chars/${uid()}_${window._charImgFile.name}`); delete window._charImgFile; }
+    catch(e) { toast('Image upload failed','error'); }
+  }
+  const data = {
+    name, role: document.getElementById('c-role')?.value||'',
+    age: document.getElementById('c-age')?.value||'',
+    appearance: document.getElementById('c-appearance')?.value||'',
+    personality: document.getElementById('c-personality')?.value||'',
+    background: document.getElementById('c-bg')?.value||'',
+    tags: (document.getElementById('c-tags')?.value||'').split(',').map(t=>t.trim()).filter(Boolean),
+    imageUrl: imageUrl||null
+  };
+  if (cid) await dbUpdate('characters', cid, data);
+  else     await dbSave('characters', data);
+  toast(cid?'Character updated':'Character created','success');
+  closeModal();
+}
+window.saveChar = saveChar;
+
+/* ════════════════════════════════════
+   LORE MODAL
+   ════════════════════════════════════ */
+function openLoreModal(lid=null) {
+  const l = lid ? APP.lore.find(x=>x.id===lid) : null;
+  openModal(`<div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title">${l?'Edit Entry':'New Lore Entry'}</span>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Title *</label><input id="l-title" value="${esc(l?.title||'')}" placeholder="Entry title…" style="width:100%"></div>
+      <div class="form-group"><label>Category</label><input id="l-cat" value="${esc(l?.category||'')}" placeholder="Location, Magic, History…" style="width:100%"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Icon</label><input id="l-icon" value="${esc(l?.icon||'📄')}" placeholder="📄" style="width:60px;text-align:center;font-size:20px" maxlength="2"></div>
+    </div>
+    <div class="form-group"><label>Summary</label><textarea id="l-summary" rows="2" placeholder="One-line description" style="width:100%">${esc(l?.summary||'')}</textarea></div>
+    <div class="form-group"><label>Content</label><textarea id="l-content" rows="6" placeholder="Full lore content…" style="width:100%;font-family:var(--write);line-height:1.75">${esc(l?.content||'')}</textarea></div>
+    <div class="form-group"><label>Image</label>
+      <div class="img-drop" onclick="document.getElementById('lore-img-input').click()">📷 Upload image</div>
+      <input type="file" id="lore-img-input" accept="image/*" style="display:none"
+        onchange="window._loreImgFile=this.files[0];const p=document.getElementById('lore-img-preview');p.src=URL.createObjectURL(this.files[0]);p.style.display='block'">
+      <img id="lore-img-preview" src="${esc(l?.imageUrl||'')}" style="${l?.imageUrl?'':'display:none;'}width:100%;max-height:130px;object-fit:cover;border-radius:8px;margin-top:8px">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLore('${lid||''}')">Save Entry</button>
+    </div>
+  </div>`);
+}
+window.openLoreModal = openLoreModal;
+
+async function saveLore(lid) {
+  const title = document.getElementById('l-title')?.value?.trim();
+  if (!title) { toast('Title required','error'); return; }
+  if (!APP.project) { toast('Select a project first','error'); return; }
+  let imageUrl = lid ? APP.lore.find(l=>l.id===lid)?.imageUrl : null;
+  if (window._loreImgFile) {
+    try { imageUrl = await uploadImg(window._loreImgFile, `projects/${APP.project.id}/lore/${uid()}_${window._loreImgFile.name}`); delete window._loreImgFile; }
+    catch(e) { toast('Image upload failed','error'); }
+  }
+  const data = { title, category:document.getElementById('l-cat')?.value||'', icon:document.getElementById('l-icon')?.value||'📄', summary:document.getElementById('l-summary')?.value||'', content:document.getElementById('l-content')?.value||'', imageUrl:imageUrl||null };
+  if (lid) await dbUpdate('lore', lid, data);
+  else     await dbSave('lore', data);
+  toast(lid?'Entry updated':'Entry created','success'); closeModal();
+}
+window.saveLore = saveLore;
+
+/* ════════════════════════════════════
+   RELATIONSHIP MODAL
+   ════════════════════════════════════ */
+function openRelModal() {
+  if (APP.chars.length < 2) { toast('Need at least 2 characters','warn'); return; }
+  openModal(`<div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Relationship</span>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-group"><label>Character A *</label>
+      <select id="rel-a" style="width:100%"><option value="">Select…</option>
+        ${APP.chars.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-group"><label>Relationship Type *</label>
+      <input id="rel-type" placeholder="allies, rivals, siblings, lovers…" style="width:100%"></div>
+    <div class="form-group"><label>Character B *</label>
+      <select id="rel-b" style="width:100%"><option value="">Select…</option>
+        ${APP.chars.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-group"><label>Description</label>
+      <textarea id="rel-desc" rows="2" placeholder="How do they know each other?" style="width:100%"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRel()">Add Relationship</button>
+    </div>
+  </div>`);
+}
+window.openRelModal = openRelModal;
+
+async function saveRel() {
+  const a = document.getElementById('rel-a')?.value, b = document.getElementById('rel-b')?.value, t = document.getElementById('rel-type')?.value?.trim();
+  if (!a||!b||!t) { toast('All fields required','error'); return; }
+  if (a===b)       { toast('Choose different characters','error'); return; }
+  await dbSave('relationships', { charA:a, charB:b, type:t, description:document.getElementById('rel-desc')?.value||'' });
+  toast('Relationship added','success'); closeModal();
+}
+window.saveRel = saveRel;
+
+/* ════════════════════════════════════
+   EVENT MODAL
+   ════════════════════════════════════ */
+const COLOR_OPTIONS = ['var(--accent)','var(--amber)','var(--teal)','var(--coral)','var(--mint)','var(--blue)'];
+function openEventModal(eid=null) {
+  const e = eid ? APP.events.find(x=>x.id===eid) : null;
+  openModal(`<div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">${e?'Edit Event':'New Event'}</span>
+      <button class="btn btn-icon btn-ghost" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-group"><label>Title *</label><input id="ev-title" value="${esc(e?.title||'')}" placeholder="What happens?" style="width:100%"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Date / Marker</label><input id="ev-date" value="${esc(e?.date||'')}" placeholder="Year 301, Act II…" style="width:100%"></div>
+      <div class="form-group"><label>Color</label>
+        <div style="display:flex;gap:6px;padding-top:5px">
+          ${COLOR_OPTIONS.map(c=>`
+            <div style="width:24px;height:24px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${(e?.color||COLOR_OPTIONS[0])===c?'var(--text)':'transparent'};transition:transform 110ms var(--ease-out)"
+                 onclick="window._evColor='${c}';document.querySelectorAll('.ev-color-dot').forEach(d=>d.style.borderColor='transparent');this.style.borderColor='var(--text)'"
+                 class="ev-color-dot"></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="form-group"><label>Description</label><textarea id="ev-desc" rows="3" placeholder="What unfolds?" style="width:100%">${esc(e?.description||'')}</textarea></div>
+    <div class="form-group"><label>Characters involved</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${APP.chars.map(c=>`
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:5px 9px;border-radius:7px;border:1px solid var(--border);background:var(--bg3)">
+            <input type="checkbox" value="${c.id}" ${e?.characters?.includes(c.id)?'checked':''} class="ev-char-cb"
+                   style="width:auto;background:none;border:none;height:auto;padding:0"> ${esc(c.name)}
+          </label>`).join('')}
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEvent('${eid||''}')">Save Event</button>
+    </div>
+  </div>`);
+  if (e?.color) window._evColor = e.color;
+}
+window.openEventModal = openEventModal;
+
+async function saveEvent(eid) {
+  const title = document.getElementById('ev-title')?.value?.trim();
+  if (!title) { toast('Title required','error'); return; }
+  const chars = [...document.querySelectorAll('.ev-char-cb:checked')].map(e=>e.value);
+  const data = { title, date:document.getElementById('ev-date')?.value||'', description:document.getElementById('ev-desc')?.value||'', color:window._evColor||COLOR_OPTIONS[0], characters:chars };
+  if (eid) await dbUpdate('events',eid,data);
+  else     await dbSave('events',data);
+  toast(eid?'Event updated':'Event added','success'); closeModal();
+}
+window.saveEvent = saveEvent;
+
+/* ════════════════════════════════════
+   MANUSCRIPT
+   ════════════════════════════════════ */
+async function openNewManuscript() {
+  if (!APP.project) { toast('Select a project first','error'); return; }
+  const id = await dbSave('manuscripts', { title:'Untitled Manuscript', content:'', chapters:[], scenes:[], status:'draft' });
+  APP.msId = id; APP.msChapter = null; APP.view = 'manuscript';
+  buildSidebar(); renderContent();
+}
+window.openNewManuscript = openNewManuscript;
+
+async function addChapter(msId) {
+  const ms = APP.manuscripts.find(m=>m.id===msId); if (!ms) return;
+  const title = prompt('Chapter title:', `Chapter ${(ms.chapters||[]).length+1}`);
+  if (!title) return;
+  const chapters = [...(ms.chapters||[]), { id:uid(), title, content:'' }];
+  await dbUpdate('manuscripts', msId, { chapters });
+  APP.msChapter = chapters.length-1;
+  renderContent();
+}
+window.addChapter = addChapter;
+
+/* ════════════════════════════════════
+   NOTES
+   ════════════════════════════════════ */
+async function openNewNote() {
+  if (!APP.project) { toast('Select a project first','error'); return; }
+  const id = await dbSave('notes', { title:'New Note', content:'' });
+  openNoteDetail(id);
+}
+window.openNewNote = openNewNote;
+
+function openNoteDetail(nid) {
+  const n = APP.notes.find(x=>x.id===nid) || { id:nid, title:'', content:'' };
+  const autosave = debounce(async c => { await dbUpdate('notes',nid,{content:c}); showSaved(); }, 700);
+  openModal(`<div class="modal modal-lg">
+    <div class="modal-header">
+      <input value="${esc(n.title||'')}" placeholder="Note title…" id="note-title"
+        style="font-size:16px;font-weight:600;background:transparent;border:none;border-bottom:2px solid transparent;width:100%;color:var(--text)"
+        onfocus="this.style.borderBottomColor='var(--accent)'" onblur="this.style.borderBottomColor='transparent'"
+        onchange="dbUpdate('notes','${nid}',{title:this.value})">
+      <button class="btn btn-icon btn-ghost" onclick="closeModal()">✕</button>
+    </div>
+    <textarea id="note-body" placeholder="Write freely… (Markdown supported)"
+      style="width:100%;min-height:380px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;border:none;background:var(--bg3);border-radius:10px;padding:16px"
+      oninput="autosaveNote(this.value)">${esc(n.content||'')}</textarea>
+    <div style="font-size:10px;color:var(--text3);margin-top:7px">Markdown supported · Autosaves as you type</div>
+  </div>`);
+  window.autosaveNote = autosave;
+}
+window.openNoteDetail = openNoteDetail;
+
+/* ════════════════════════════════════
+   PLOT MODALS
+   ════════════════════════════════════ */
+function openArcModal() {
+  if (!APP.project) { toast('Select a project first','error'); return; }
+  openModal(`<div class="modal">
+    <div class="modal-header"><span class="modal-title">New Story Arc</span><button class="btn btn-icon btn-ghost" onclick="closeModal()">✕</button></div>
+    <div class="form-group"><label>Arc Name *</label><input id="arc-name" placeholder="The Hero's Journey…" style="width:100%"></div>
+    <div class="form-group"><label>Description</label><textarea id="arc-desc" rows="2" style="width:100%"></textarea></div>
+    <div class="form-group"><label>Color</label>
+      <div style="display:flex;gap:7px">
+        ${COLOR_OPTIONS.map(c=>`<div style="width:26px;height:26px;border-radius:50%;background:${c};cursor:pointer;border:2px solid transparent;transition:transform 110ms var(--ease-out)" onclick="window._arcColor='${c}';document.querySelectorAll('.arc-cd').forEach(d=>d.style.borderColor='transparent');this.style.borderColor='var(--text)'" class="arc-cd"></div>`).join('')}
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveArc()">Create Arc</button></div>
+  </div>`);
+}
+window.openArcModal = openArcModal;
+
+async function saveArc() {
+  const name = document.getElementById('arc-name')?.value?.trim();
+  if (!name) { toast('Name required','error'); return; }
+  const arcs = [...(APP.project.arcs||[]), { id:uid(), name, description:document.getElementById('arc-desc')?.value||'', color:window._arcColor||COLOR_OPTIONS[0] }];
+  await updateDoc(doc(DB,'projects',APP.project.id), { arcs, updatedAt:serverTimestamp() });
+  APP.project.arcs = arcs; closeModal(); renderContent(); toast('Arc created','success');
+}
+window.saveArc = saveArc;
+
+function openSceneModal() {
+  if (!APP.manuscripts.length) { toast('Create a manuscript first','error'); return; }
+  openModal(`<div class="modal">
+    <div class="modal-header"><span class="modal-title">New Scene</span><button class="btn btn-icon btn-ghost" onclick="closeModal()">✕</button></div>
+    <div class="form-group"><label>Manuscript</label>
+      <select id="scene-ms" style="width:100%">${APP.manuscripts.map(m=>`<option value="${m.id}">${esc(m.title||'Untitled')}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Scene Title *</label><input id="scene-title" placeholder="Scene title…" style="width:100%"></div>
+    <div class="form-group"><label>Phase</label>
+      <select id="scene-phase" style="width:100%">
+        <option value="planned">Planned</option><option value="writing">Writing</option><option value="done">Done</option>
+      </select></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveScene()">Add Scene</button></div>
+  </div>`);
+}
+window.openSceneModal = openSceneModal;
+
+async function saveScene() {
+  const msId  = document.getElementById('scene-ms')?.value;
+  const title = document.getElementById('scene-title')?.value?.trim();
+  if (!msId||!title) { toast('Fill all fields','error'); return; }
+  const ms = APP.manuscripts.find(m=>m.id===msId); if (!ms) return;
+  const scenes = [...(ms.scenes||[]), { id:uid(), title, phase:document.getElementById('scene-phase')?.value||'planned' }];
+  await dbUpdate('manuscripts', msId, { scenes });
+  closeModal(); toast('Scene added','success');
+}
+window.saveScene = saveScene;
+
+/* ════════════════════════════════════
+   QUICK ADD
+   ════════════════════════════════════ */
+function openQuickAdd() {
+  if (!APP.project) { openProjectsModal(); return; }
+  openModal(`<div class="modal">
+    <div class="modal-header"><span class="modal-title">Quick Add</span><button class="btn btn-icon btn-ghost" onclick="closeModal()">✕</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${[
+        { icon:'👤', label:'Character',   fn:"closeModal();openCharModal()"        },
+        { icon:'🌍', label:'Lore Entry',  fn:"closeModal();openLoreModal()"        },
+        { icon:'📅', label:'Event',       fn:"closeModal();openEventModal()"       },
+        { icon:'🕸',  label:'Relationship',fn:"closeModal();openRelModal()"         },
+        { icon:'✍',  label:'Manuscript',  fn:"closeModal();openNewManuscript()"    },
+        { icon:'📝', label:'Note',        fn:"closeModal();openNewNote()"          },
+      ].map(a=>`
+        <button class="btn btn-ghost" onclick="${a.fn}"
+          style="padding:16px;flex-direction:column;gap:6px;font-size:13px;height:auto;justify-content:center">
+          <span style="font-size:24px">${a.icon}</span>
+          <span>${a.label}</span>
+        </button>`).join('')}
+    </div>
+  </div>`);
+}
+
+/* ════════════════════════════════════
+   SIDEBAR TOGGLE
+   ════════════════════════════════════ */
+function setupSidebar() {
+  const sb = document.getElementById('sidebar');
+  const btn = document.getElementById('sb-toggle');
+  const isOpen = localStorage.getItem('sb-open') === 'true';
+  if (isOpen) sb.classList.add('open');
+  btn.addEventListener('click', () => {
+    sb.classList.toggle('open');
+    localStorage.setItem('sb-open', sb.classList.contains('open'));
+  });
+}
+
+/* ════════════════════════════════════
+   TOPBAR WIRING
+   ════════════════════════════════════ */
+function setupTopbar() {
+  document.getElementById('proj-btn').addEventListener('click', openProjectsModal);
+  document.getElementById('quick-add-btn').addEventListener('click', openQuickAdd);
+
+  document.getElementById('theme-select').addEventListener('change', e => setTheme(e.target.value));
+  document.getElementById('font-select').addEventListener('change',  e => setFont(e.target.value));
+
+  document.getElementById('search-input').addEventListener('input', e => {
+    APP.search = e.target.value;
+    renderContent();
+  });
+
+  document.getElementById('proj-title').addEventListener('change', e => {
+    if (APP.project) {
+      dbUpdate('projects', APP.project.id, { name: e.target.value });
+      APP.project.name = e.target.value;
+    }
+  });
+}
+
+/* ════════════════════════════════════
+   INIT
+   ════════════════════════════════════ */
+async function init() {
+  setupSidebar();
+  setupTopbar();
+  buildSidebar();
+
+  // Load config
+  try {
+    const cfgSnap = await getDoc(doc(DB,'settings','global'));
+    if (cfgSnap.exists()) { Object.assign(APP.cfg, cfgSnap.data()); }
+  } catch(_) {}
+  document.documentElement.setAttribute('data-theme', APP.cfg.theme||'midnight');
+  document.documentElement.setAttribute('data-font',  APP.cfg.font||'literary');
+  document.getElementById('theme-select').value = APP.cfg.theme || 'midnight';
+  document.getElementById('font-select').value  = APP.cfg.font  || 'literary';
+
+  // Load projects
+  try {
+    const snap = await getDocs(collection(DB,'projects'));
+    APP.projects = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    const lastId = localStorage.getItem('lastProjectId');
+    if (lastId) {
+      const p = APP.projects.find(x => x.id===lastId);
+      if (p) { APP.project=p; document.getElementById('proj-title').value=p.name; loadProject(p.id); }
+    }
+  } catch(e) { console.warn('Projects load error:', e); }
+
+  // Live project listener
+  onSnapshot(collection(DB,'projects'), snap => {
+    APP.projects = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+  });
+
+  // First render
+  renderAll();
+}
+
+init().catch(err => {
+  document.getElementById('content').innerHTML = `
+    <div style="display:flex;height:100%;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:var(--text2)">
+      <div style="font-size:32px">⚠️</div>
+      <h2 style="font-size:16px">Firebase connection failed</h2>
+      <p style="font-size:12px;max-width:280px;text-align:center;color:var(--text3)">${err.message}</p>
+      <button onclick="location.reload()" class="btn btn-primary">Retry</button>
+    </div>`;
+});
+</script>
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+</body>
+</html>
